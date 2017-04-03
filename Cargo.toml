@@ -1,5 +1,5 @@
 [package]
-name = "twitch"
+name = "twitch-rs"
 version = "0.1.0"
 authors = ["tristen"]
 
