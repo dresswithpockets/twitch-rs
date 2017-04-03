@@ -4,9 +4,6 @@ mod message;
 mod user;
 mod client;
 
-use std::env;
-use client::TwitchClient;
-
 macro_rules! get_arg {
 	($e:expr) => (env::args().nth($e).unwrap_or(String::from("")));
 }
@@ -14,27 +11,30 @@ macro_rules! get_arg {
 #[cfg(test)]
 mod tests {
 
+	use std::env;
+	use client::TwitchClient;
+	use client::Event;
+
 	#[test]
 	fn it_works() {
 
 		let client: TwitchClient;
-		let user: String;
-		let pass: String;
-		let channel: String;
-		let logging: bool;
+		let mut user = String::from("");
+		let mut pass = String::from("");
+		let mut channel = String::from("");
+		let mut logging = false;
 
-		for (index, arg) in env::args().iter().enumerate() {
+		for (index, arg) in env::args().enumerate() {
 			if index == 0 { continue; }
 
-			match arg {
+			match arg.as_ref() {
 				"-u" => user = get_arg!(index + 1),
 				"-p" => pass = get_arg!(index + 1),
 				"-c" => channel = get_arg!(index + 1),
 				"-l" => logging = true,
+				_ => panic!("Unexpected argument passed: {}", arg),
 			}
 		}
-
-		// TODO: check to see if user and pass are matched, if not, panic
 
 		client = TwitchClient {
 			user: user,
@@ -42,5 +42,16 @@ mod tests {
 			default_channel: channel,
 			logging: logging
 		};
+
+		client.connect();
+
+		loop {
+			match client.recv_event() {
+				Ok(Event::MessageReceived(m)) => {
+					
+				}
+				Err(err) => println!("Error {:?}", err),
+			}
+		}
 	}
 }
