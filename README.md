@@ -8,7 +8,7 @@ Rust wrapper for Twitch API
 
 The following is everything we plan on implementing in the API before officially releasing as "version 1.0".
 
-```rs
+```rust
 // Events
 Event::Connected(ConnectedArgs)
 Event::ChannelJoined(ChannelJoinedArgs)
@@ -43,9 +43,8 @@ Event::SendReceiveData(SendReceiveDataArgs)
 Event::NowHosting(NowHostingArgs)
 Event::BeingHosted(BeingHostedArgs)
 
-// Client actions
-Client:
 
+// Client actions
 connect()
 disconnect()
 reconnect()
