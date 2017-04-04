@@ -5,3 +5,4 @@ authors = ["tristen"]
 
 [dependencies]
 hyper = "*"
+ws = "*"
