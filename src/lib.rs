@@ -3,6 +3,9 @@ extern crate hyper;
 mod message;
 mod user;
 mod client;
+mod kraken;
+mod irc;
+mod channel;
 
 macro_rules! get_arg {
 	($e:expr) => (env::args().nth($e).unwrap_or(String::from("")));
@@ -48,7 +51,7 @@ mod tests {
 		loop {
 			match client.recv_event() {
 				Ok(Event::MessageReceived(m)) => {
-					
+
 				}
 				Err(err) => println!("Error {:?}", err),
 			}
