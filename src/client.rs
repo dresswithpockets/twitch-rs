@@ -15,7 +15,7 @@ impl TwitchClient {
 
 	pub fn recv_event(&self) -> Result<Event, &str> {
 
-		Err("Not yet implemented")wwww
+		Err("Not yet implemented")
 	}
 
 	fn parse_irc(irc: String) {
