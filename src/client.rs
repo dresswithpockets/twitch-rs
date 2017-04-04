@@ -8,10 +8,6 @@ pub struct TwitchClient {
 	pub logging: bool,
 }
 
-pub enum Event {
-	MessageReceived(Message),
-}
-
 impl TwitchClient {
 	pub fn connect(&self) {
 		// TODO: Connect!
@@ -19,6 +15,17 @@ impl TwitchClient {
 
 	pub fn recv_event(&self) -> Result<Event, &str> {
 
-		Err("Not yet implemented")
+		Err("Not yet implemented")wwww
 	}
+
+	fn parse_irc(irc: String) {
+		// handle irc commands here
+
+		// On Message Received
+
+	}
+}
+
+pub enum Event {
+	MessageReceived(Message),
 }
