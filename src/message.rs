@@ -2,6 +2,16 @@
 use user::User;
 
 pub struct Message {
-	pub text: String,
-	pub user: User
+	text: String,
+	user: User
+}
+
+impl Message {
+	pub fn text(&self) -> &String {
+		&self.text
+	}
+
+	pub fn user(&self) -> &User {
+		&self.user
+	}
 }
