@@ -1,4 +1,6 @@
+
 extern crate hyper;
+extern crate ws;
 
 mod message;
 mod user;
@@ -39,12 +41,7 @@ mod tests {
 			}
 		}
 
-		client = TwitchClient {
-			user: user,
-			auth: pass,
-			default_channel: channel,
-			logging: logging
-		};
+		client = TwitchClient::from(user, pass, channel, logging);
 
 		client.connect();
 
