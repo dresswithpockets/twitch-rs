@@ -39,23 +39,23 @@ pub struct ChannelState {
 
 impl ChannelState {
 	pub fn from(irc: String) -> ChannelState {
+
+	// typical irc message:
+	// broadcaster-lang=;emote-only=0;r9k=0;slow=0;subs-only=1 :tmi.twitch.tv ROOMSTATE #phxvyper
+
 		let properties = irc.split_whitespace().nth(0);
-		let mut r9k: bool = false;
-		let mut sub: bool = false;
-		let mut slow: bool = false;
-		let mut emote: bool = false;
-		let mut lang: String = String::from("");
-		let mut channel: String = String::from("");
+		let mut r9k = false;
+		let mut sub = false;
+		let mut slow = false;
+		let mut emote = false;
+		let mut lang = String::from("");
+		let mut channel = String::from("");
 
-		macro_rules! parse_from_nth {
-			($tag:ident, $e:expr) => ($tag.nth($e).unwrap().parse().unwrap());
-		}
-
-		for prop in properties.unwrap().split(";") {
+		for prop in properties.unwrap_or("").split(";") {
 			let mut prop_split = prop.split("=");
-			match prop_split.nth(0).unwrap() {
+			match prop_split.nth(0).unwrap_or("") {
 
-				"broadcaster-lang" => lang = prop_split.nth(1).unwrap().to_string(),
+				"broadcaster-lang" => lang = prop_split.nth(1).unwrap_or("").to_string(),
 
 				"emote-only" => emote = bool_from_nth_str(&mut prop_split, 1),
 				"r9k" => r9k = bool_from_nth_str(&mut prop_split, 1),
@@ -66,7 +66,7 @@ impl ChannelState {
 			}
 		}
 
-		channel = irc.to_string().split("#").nth(1).unwrap().to_string();
+		channel = irc.to_string().split("#").nth(1).unwrap_or("").to_string();
 
 		ChannelState {
 			r9k_mode: r9k,
