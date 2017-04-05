@@ -1,14 +1,18 @@
 
+use ws;
 
-use ws::{connect, Handler, Sender, Handshake, Result, Message, CloseCode, Error};
 use channel;
 use message;
+use rfc;
 use std::error;
 
 static DEFAULT_HOST: &'static str = "irc-ws.chat.twitch.tv";
 const DEFAULT_PORT: i32 = 80;
 
 pub struct TwitchClient {
+
+	out: ws::Sender,
+
 	credentials: ConnectionCredentials,
 	default_channel: String,
 	logging: bool,
@@ -17,39 +21,84 @@ pub struct TwitchClient {
 }
 
 impl TwitchClient {
-	pub fn from(user: String, auth: String, channel: String, log: bool) -> TwitchClient {
+	pub fn start(user: String, auth: String, channel: String, log: bool) -> ws::Result<()> {
 
 		// TODO: add logging capabilities
 
 		// TODO: add command identifiers for chat and whispers
 
-		TwitchClient {
-			credentials: ConnectionCredentials::from(user, auth),
+		let credentials = ConnectionCredentials::from(user, auth);
+		//let client: TwitchClient;
+
+
+		// TODO: Setup websocket connection
+		/*ws::connect(
+			format!("wss://{}:{}", credentials.host(), credentials.port()),
+			move |out| {
+				TwitchClient {
+					out: out,
+
+					credentials: credentials,
+					default_channel: channel,
+					logging: log,
+
+					channels: Vec::new(),
+				}
+			}
+		).unwrap();*/
+
+		Ok(())
+
+		/*TwitchClient {
+			credentials: credentials,
 			default_channel: channel,
 			logging: log,
 
 			channels: Vec::new(),
-		}
+		}*/
+	}
+
+	pub fn credentials(&self) -> &ConnectionCredentials {
+		&self.credentials
 	}
 
 	pub fn connect(&self) {
-		connect(format!("ws://{}:{}", self.credentials().host(), self.credentials().port()),
+		/*connect(format!("ws://{}:{}", self.credentials().host(), self.credentials().port()),
 			|out| {
 				WebClient {
-					out: out
+					out: out,
+					/*open_func: |wc: &mut WebClient, hs: Handshake| -> Result<()> {
+						self.on_open(wc, hs)
+					},
+
+					close_func: |wc: &mut WebClient, cc: CloseCode, reason: &str| {
+						self.on_close(wc, cc, reason);
+					},
+
+					message_func: |wc: &mut WebClient, msg: Message| -> Result<()> {
+						self.on_message(wc, msg)
+					},
+
+					error_func: |wc: &mut WebClient, err: Error| {
+						self.on_error(wc, err);
+					},*/
 				}
 			}
-		);
+		);*/
 	}
 
-	pub fn recv_event(&self) -> Result<Event> {
+	pub fn disconnect(&self) {
+		// TODO: Disconnect!
+	}
+
+	pub fn recv_event(&self) -> Result<Event, &str> {
 
 		// TODO: return next event in queue
 		Ok(Event::None)
 	}
 
-	pub fn credentials(&self) -> &ConnectionCredentials {
-		&self.credentials
+	pub fn web_send(&self, msg: String) -> ws::Result<()> {
+		self.out.send(msg)
 	}
 
 	fn parse_irc(irc: String) {
@@ -57,34 +106,64 @@ impl TwitchClient {
 
 		// On Message Received
 	}
-}
 
-pub struct WebClient {
+	fn on_web_open(&self, hs: ws::Handshake) -> ws::Result<()> {
 
-	out: Sender,
-}
+		self.web_send(
+			rfc::pass(self.credentials().auth())
+		)?;
+		self.web_send(
+			rfc::nick(self.credentials().user())
+		)?;
+		self.web_send(
+			rfc::user(
+				self.credentials().user(),
+				&0,
+				self.credentials().user()
+			)
+		)?;
 
-impl Handler for WebClient {
+		self.web_send(String::from("CAP REQ twitch.tv/membership"))?;
+		self.web_send(String::from("CAP REQ twitch.tv/commands"))?;
+		self.web_send(String::from("CAP REQ twitch.tv/tags"))?;
 
-	fn on_open(&mut self, _: Handshake) -> Result<()> {
+		if !self.default_channel.is_empty() {
+			// TODO: Join default channel
+		}
 
-		// TODO: handle on open garbo
 		Ok(())
 	}
 
-	fn on_message(&mut self, msg: Message) -> Result<()> {
-
-		// TODO: handle on message garbo
+	fn on_web_message(&self, msg: ws::Message) -> ws::Result<()> {
 		Ok(())
 	}
 
-	fn on_close(&mut self, code: CloseCode, reason: &str) {
+	fn on_web_close(&self, code: ws::CloseCode, reason: &str) {
 
-		// TODO: handle on close garbo
 	}
 
-	fn on_error(&mut self, err: Error) {
-		// TODO: handle error garbo
+	fn on_web_error(&self, err: ws::Error) {
+
+	}
+}
+
+
+impl ws::Handler for TwitchClient {
+
+	fn on_open(&mut self, hs: ws::Handshake) -> ws::Result<()> {
+		self.on_web_open(hs)
+	}
+
+	fn on_message(&mut self, msg: ws::Message) -> ws::Result<()> {
+		self.on_web_message(msg)
+	}
+
+	fn on_close(&mut self, code: ws::CloseCode, reason: &str) {
+		self.on_web_close(code, reason)
+	}
+
+	fn on_error(&mut self, err: ws::Error) {
+		self.on_web_error(err)
 	}
 }
 
@@ -107,6 +186,15 @@ impl ConnectionCredentials {
 		host: String,
 		port: i32
 	) -> ConnectionCredentials {
+
+		// we're offloading this oauth fix here
+		// since it doesnt need to be in on_open/OnConnected
+
+		let mut auth = auth;
+
+		if !auth.contains(":") {
+			auth = format!("oauth:{}", auth.replace("oauth", ""));
+		}
 
 		ConnectionCredentials {
 			user: user,
@@ -137,6 +225,6 @@ pub enum Event {
 	None,
 
 	// TODO: add all event types
-
-	MessageReceived(message::Message),
+	Connected(String, String), // username, default_channel
+	MessageReceived(message::ChatMessage), // chat_message
 }
