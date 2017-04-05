@@ -1,12 +1,12 @@
 
 use user::User;
 
-pub struct Message {
+pub struct ChatMessage {
 	text: String,
 	user: User
 }
 
-impl Message {
+impl ChatMessage {
 	pub fn text(&self) -> &String {
 		&self.text
 	}
