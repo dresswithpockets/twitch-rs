@@ -9,7 +9,7 @@ to represent multiple channels at once - we'll be using this module and structur
 for that.
 */
 
-use message::Message;
+use message::ChatMessage;
 use std::str::Split;
 
 pub struct Channel {
@@ -18,6 +18,13 @@ pub struct Channel {
 }
 
 impl Channel {
+	pub fn from(name: String, state: ChannelState) -> Channel {
+		Channel {
+			name: name,
+			state: state,
+		}
+	}
+
 	pub fn name(&self) -> &String {
 		&self.name
 	}
@@ -34,6 +41,7 @@ pub struct ChannelState {
 	slow_mode: bool,
 	emote_only: bool,
 
+	channel: String,
 	broadcaster_lang: String,
 }
 
@@ -49,7 +57,7 @@ impl ChannelState {
 		let mut slow = false;
 		let mut emote = false;
 		let mut lang = String::from("");
-		let mut channel = String::from("");
+		let mut channel;
 
 		for prop in properties.unwrap_or("").split(";") {
 			let mut prop_split = prop.split("=");
@@ -73,6 +81,7 @@ impl ChannelState {
 			sub_only: sub,
 			slow_mode: slow,
 			emote_only: emote,
+			channel: channel,
 			broadcaster_lang: lang,
 		}
 	}
