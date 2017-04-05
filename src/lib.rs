@@ -1,13 +1,13 @@
 
-extern crate hyper;
 extern crate ws;
 
 mod message;
 mod user;
-mod client;
+mod twitch;
 mod kraken;
 mod irc;
 mod channel;
+mod rfc;
 
 macro_rules! get_arg {
 	($e:expr) => (env::args().nth($e).unwrap_or(String::from("")));
