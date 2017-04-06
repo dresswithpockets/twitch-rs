@@ -7,6 +7,13 @@ pub struct User {
 }
 
 impl User {
+	pub fn from(id: &u64, display: &String) -> User {
+		User {
+			id: id,
+			display_name: display
+		}
+	}
+
 	pub fn id(&self) -> &u64 {
 		&self.id
 	}
@@ -28,7 +35,7 @@ pub struct UserState {
 }
 
 impl UserState {
-	pub fn from_irc(irc: String) -> UserState {
+	pub fn from_irc(irc: &String) -> UserState {
 		// TODO: determine UserState from IRC message
 		unimplemented!()
 	}

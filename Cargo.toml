@@ -7,3 +7,4 @@ authors = ["tristen"]
 ws = "*"
 url = "*"
 regex = "*"
+time = "*"
