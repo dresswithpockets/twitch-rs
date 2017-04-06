@@ -12,6 +12,8 @@ mod channel;
 mod rfc;
 mod subscriber;
 
+use client::{TwitchClient, Event};
+
 macro_rules! get_arg {
 	($e:expr) => (env::args().nth($e).unwrap_or(String::from("")));
 }
@@ -26,7 +28,6 @@ mod tests {
 	#[test]
 	fn it_works() {
 
-		let client: TwitchClient;
 		let mut user = String::from("");
 		let mut pass = String::from("");
 		let mut channel = String::from("");
@@ -44,17 +45,18 @@ mod tests {
 			}
 		}
 
-		client = TwitchClient::from(user, pass, channel, logging);
+		TwitchClient::connect(user, pass, channel, logging, on_event);
 
-		client.connect();
+		//await
+		loop {}
+	}
 
-		loop {
-			match client.recv_event() {
-				Ok(Event::MessageReceived(m)) => {
-
-				}
-				Err(err) => println!("Error {:?}", err),
+	fn on_event(client: &TwitchClient, event: Event) {
+		match event {
+			Event::MessageReceived(message) => {
+				println!("{}: {}", message.user().display_name(), message.text());
 			}
+			_ => {}
 		}
 	}
 }
