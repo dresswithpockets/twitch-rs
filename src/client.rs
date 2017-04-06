@@ -340,23 +340,38 @@ impl Clone for ConnectionCredentials {
 pub enum Event {
 	None,
 
-	// TODO: add all event types
-
+	OnLog(String, String, time::Tm),
 	Connected(String, String), // username, default_channel
 	ChannelJoined(String, String), // username, channel
 	IncorrectLogin(String), // error message
 	ChannelStateChanged(channel::ChannelState, String), // channel_state, channel
 	UserStateChanged(user::UserState), // user_state
 	MessageReceived(message::ChatMessage), // chat_message
-
+	MessageSent(message::ChatMessage), // chat_message
 	WhisperSent(String, String), // receiver, message
-
+	ChatCommandReceived(),
+	WhisperCommandReceived(),
+	UserJoined(),
+	ModeratorJoined(),
+	ModeratorLeft(),
 	NewSubscriber(String, subscriber::NewSubscriber), // channel, new_sub
-
+	ReSubcriber(),
+	HostLeft(),
+	ExistingUsersDetected(),
+	UserLeft(),
+	HostingStarted(),
+	HostingStopped(),
 	Disconnected(String, String), // username, reason
 	ConnectionError(String, String), // username, message
-
+	ChatCleared(String), // channel
+	UserTimedout(),
+	LeftChannel(),
+	UserBanned(),
+	ModeratorsReceived(),
+	ChatColorChanged(),
 	SendReceiveData(SendReceiveDirection, String), // direction, data
+	NowHosting(),
+	BeingHosted(String, String, i32, String), // bot_username, host_channel, viewers, channel_being_hosted
 }
 
 pub enum SendReceiveDirection {
