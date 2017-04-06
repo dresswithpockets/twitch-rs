@@ -2,7 +2,29 @@
 Rust wrapper for Twitch API
 
 ### Implemented API
+```rust
+// Events
+Event::Connected(username: String, default_channel: String)
+Event::JoinedChannel(username: String, channel: String)
+Event::IncorrectLogin(error: String)
+Event::ChannelStateChanged(ChannelState, channel: String)
+Event::UserStateChanged(UserState)
+Event::MessageReceived(ChatMessage)
 
+Event::WhisperSent(receiver: String, reason: String)
+
+Event::NewSubscriber(channel: String, NewSubscriber)
+
+Event::Disconnected(username: String, reason: String)
+Event::ConnectionError(username: String, message: String)
+
+Event::SendReceiveData(SendReceiveDirection, data: String)
+
+// Client actions
+disconnect()
+reconnect()
+
+```
 
 ### Planned API
 
@@ -10,21 +32,13 @@ The following is everything we plan on implementing in the API before officially
 
 ```rust
 // Events
-Event::Connected(ConnectedArgs)
-Event::ChannelJoined(ChannelJoinedArgs)
-Event::IncorrectLogin(IncorrectLoginArgs)
-Event::ChannelStateChanged(ChannelStateChangedArgs)
-Event::UserStateChanged(UserStateChangedArgs)
-Event::MessageReceived(MessageReceivedArgs)
 Event::WhisperReceived(WhisperReceivedArgs)
 Event::MessageSent(MessageSentArgs)
-Event::WhisperSent(WhisperSentArgs)
 Event::ChatCommandReceived(ChatCommandReceivedArgs)
 Event::WhisperCommandReceived(WhisperCommandReceivedArgs)
 Event::UserJoined(UserJoinedArgs)
 Event::ModeratorJoined(ModeratorJoinedArgs)
 Event::ModeratorLeft(ModeratorLeftArgs)
-Event::NewSubscriber(NewSubscriberArgs)
 Event::ReSubscriber(ReSubscriberArgs)
 Event::HostLeft(HostLeftArgs)
 Event::DetectedExistingUsers(ExistingUsersArgs)
@@ -46,8 +60,6 @@ Event::BeingHosted(BeingHostedArgs)
 
 // Client actions
 connect()
-disconnect()
-reconnect()
 
 send_raw(message: String)
 
