@@ -29,67 +29,67 @@ pub fn notice(dest: &String, message: &String) -> String {
 	format!("NOTICE {} :{}", dest, message)
 }
 
-pub fn join(channel: &String) -> String {
+pub fn join_channel(channel: &String) -> String {
 	format!("JOIN {}", channel)
 }
 
-pub fn join_multi(channels: &[String]) -> String {
+pub fn join_channels(channels: &[String]) -> String {
 	format!("JOIN {}", channels.to_vec().join(","))
 }
 
-pub fn join_key(channel: &String, key: &String) -> String {
+pub fn join_channel_key(channel: &String, key: &String) -> String {
 	format!("JOIN {} {}", channel, key)
 }
 
-pub fn join_key_multi(channels: &[String], keys: &[String]) -> String {
+pub fn join_channels_keys(channels: &[String], keys: &[String]) -> String {
 	format!("JOIN {} {}", channels.to_vec().join(","), keys.to_vec().join(","))
 }
 
-pub fn part(channel: &String) -> String {
+pub fn part_channel(channel: &String) -> String {
 	format!("PART {}", channel)
 }
 
-pub fn part_multi(channels: &[String]) -> String {
+pub fn part_channels(channels: &[String]) -> String {
 	format!("PART {}", channels.to_vec().join(","))
 }
 
-pub fn part_msg(channel: &String, message: &String) -> String {
+pub fn part_channel_message(channel: &String, message: &String) -> String {
 	format!("PART {} :{}", channel, message)
 }
 
-pub fn part_msg_multi(channels: &[String], message: &String) -> String {
+pub fn part_channels_message(channels: &[String], message: &String) -> String {
 	format!("PART {} :{}", channels.to_vec().join(","), message)
 }
 
-pub fn kick(channel: &String, nick: &String) -> String {
+pub fn kick_channel(channel: &String, nick: &String) -> String {
 	format!("KICK {} {}", channel, nick)
 }
 
-pub fn kick_comment(channel: &String, nick: &String, comment: &String) -> String {
+pub fn kick_channel_comment(channel: &String, nick: &String, comment: &String) -> String {
 	format!("KICK {} {} :{}", channel, nick, comment)
 }
 
-pub fn kick_multi(channels: &[String], nick: &String) -> String {
+pub fn kick_channels(channels: &[String], nick: &String) -> String {
 	format!("KICK {} {}", channels.to_vec().join(","), nick)
 }
 
-pub fn kick_comment_multi(channels: &[String], nick: &String, comment: &String) -> String {
+pub fn kick_channels_nick_comment(channels: &[String], nick: &String, comment: &String) -> String {
 	format!("KICK {} {} :{}", channels.to_vec().join(","), nick, comment)
 }
 
-pub fn kick_multi_nick(channel: &String, nicks: &[String]) -> String {
+pub fn kick_channel_nicks(channel: &String, nicks: &[String]) -> String {
 	format!("KICK {} {}", channel, nicks.to_vec().join(","))
 }
 
-pub fn kick_comment_multi_nick(channel: &String, nicks: &[String], comment: &String) -> String {
+pub fn kick_channel_nicks_comment(channel: &String, nicks: &[String], comment: &String) -> String {
 	format!("KICK {} {} :{}", channel, nicks.to_vec().join(","), comment)
 }
 
-pub fn kick_mutlti_nick_channel(channels: &[String], nicks: &[String]) -> String {
+pub fn kick_channels_nicks(channels: &[String], nicks: &[String]) -> String {
 	format!("KICK {} {}", channels.to_vec().join(","), nicks.to_vec().join(","))
 }
 
-pub fn kick_comment_multi_nick_channel(
+pub fn kick_channels_nicks_comment(
 	channels: &[String],
 	nicks: &[String],
 	comment: &String
@@ -285,8 +285,8 @@ pub fn who_mask(mask: &String) -> String {
 }
 
 pub fn who_mask_ircop(mask: &String, ircop: &bool) -> String {
-	if ircop {
-		format!("WHO {} o", mask)
+	if *ircop {
+		return format!("WHO {} o", mask)
 	}
 	format!("WHO {}", mask)
 }
@@ -311,9 +311,118 @@ pub fn whowas_nick(nick: &String) -> String {
 	format!("WHOWAS {}", nick)
 }
 
-// TODO: define all whowas signatures
-/*
-TODO: define all:
-	kill, ping, pong, away, rehash, die, restart, summon, users, wallops, userhost,
-	ison, quit, squit
-*/
+pub fn whowas_nicks(nicks: &[String]) -> String {
+	format!("WHOWAS {}", nicks.to_vec().join(","))
+}
+
+pub fn whowas_nick_count(nick: &String, count: &String) -> String {
+	format!("WHOWAS {} {}", nick, count)
+}
+
+pub fn whowas_nicks_count(nicks: &[String], count: &String) -> String {
+	format!("WHOWAS {} {}", nicks.to_vec().join(","), count)
+}
+
+pub fn whowas_nick_count_target(nick: &String, count: &String, target: &String) -> String {
+	format!("WHOWAS {} {} {}", nick, count, target)
+}
+
+pub fn whowas_nicks_count_target(nicks: &[String], count: &String, target: &String) -> String {
+	format!("WHOWAS {} {} {}", nicks.to_vec().join(","), count, target)
+}
+
+pub fn kill(nick: &String, comment: &String) -> String {
+	format!("KILL {} :{}", nick, comment)
+}
+
+pub fn ping_one(server: &String) -> String {
+	format!("PING {}", server)
+}
+
+pub fn ping_two(server: &String, server2: &String) -> String {
+	format!("PING {} {}", server, server2)
+}
+
+pub fn pong_one(server: &String) -> String {
+	format!("PONG {}", server)
+}
+
+pub fn pong_two(server: &String, server2: &String) -> String {
+	format!("PONG {} {}", server, server2)
+}
+
+pub fn error(message: &String) -> String {
+	format!("ERROR :{}", message)
+}
+
+pub fn away() -> String {
+	String::from("AWAY")
+}
+
+pub fn away_text(text: &String) -> String {
+	format!("AWAY :{}", text)
+}
+
+pub fn rehash() -> String {
+	String::from("REHASH")
+}
+
+pub fn die() -> String {
+	String::from("DIE")
+}
+
+pub fn restart() -> String {
+	String::from("RESTART")
+}
+
+pub fn summon_user(user: &String) -> String {
+	format!("SUMMON {}", user)
+}
+
+pub fn summon_user_target(user: &String, target: &String) -> String {
+	format!("SUMMON {} {}", user, target)
+}
+
+pub fn summon_user_target_channel(user: &String, target: &String, channel: &String) -> String {
+	format!("SUMMON {} {} {}", user, target, channel)
+}
+
+pub fn users() -> String {
+	String::from("USERS")
+}
+
+pub fn users_target(target: &String) -> String {
+	format!("USERS {}", target)
+}
+
+pub fn wallops(text: &String) -> String {
+	format!("WALLOPS :{}", text)
+}
+
+pub fn userhost_nick(nick: &String) -> String {
+	format!("USERHOST {}", nick)
+}
+
+pub fn userhost_nicks(nicks: &[String]) -> String {
+	format!("USERHOST {}", nicks.to_vec().join(","))
+}
+
+pub fn ison_nick(nick: &String) -> String {
+	format!("ISON {}", nick)
+}
+
+pub fn ison_nicks(nicks: &[String]) -> String {
+	format!("ISON {}", nicks.to_vec().join(","))
+}
+
+pub fn quit() -> String {
+	String::from("QUIT")
+}
+
+pub fn quit_message(message: &String) -> String {
+	format!("QUIT {}", message)
+}
+
+pub fn squit(server: &String, comment: &String) -> String {
+	format!("SQUIT {} :{}", server, comment)
+}
