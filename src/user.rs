@@ -7,7 +7,7 @@ pub struct User {
 }
 
 impl User {
-	pub fn from(id: &u64, display: &String) -> User {
+	pub fn from(id: u64, display: String) -> User {
 		User {
 			id: id,
 			display_name: display
