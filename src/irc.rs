@@ -8,14 +8,16 @@ use message::ChatMessage;
 use channel;
 use regex::Regex;
 
-pub fn detect_connected(message: &String) -> bool {
+/// Determines if an irc message is a connected message
+pub fn detect_connected(irc: &String) -> bool {
 
-	match message.split(":").nth(2) {
+	match irc.split(":").nth(2) {
 		Some("You are in a maze of twisty passages, all alike.") => true,
 		_ => false
 	}
 }
 
+/// Determines if an irc message is a new subscriber message
 pub fn detect_new_subscriber(
 	irc: &String,
 	channels: &Vec<channel::Channel>
@@ -42,6 +44,7 @@ pub fn detect_new_subscriber(
 	None
 }
 
+/// Determines if an irc message is a message received message
 pub fn detect_message_received(
 	irc: &String,
 	channels: &Vec<channel::Channel>
@@ -64,6 +67,7 @@ pub fn detect_message_received(
 	None
 }
 
+/// Determines of an irc message is a command received message
 pub fn detect_command_received(
 	bot_username: &String,
 	irc: &String,
@@ -98,6 +102,7 @@ pub fn detect_command_received(
 	None
 }
 
+/// Determines if an irc message is a user joined message
 pub fn detect_user_joined(
 	irc: &String,
 	channels: &Vec<channel::Channel>
@@ -117,6 +122,7 @@ pub fn detect_user_joined(
 	None
 }
 
+/// Determines if an irc message is a moderator joined message
 pub fn detect_moderator_joined(
 	irc: &String,
 	channels: &Vec<channel::Channel>
@@ -139,11 +145,13 @@ pub fn detect_moderator_joined(
 	None
 }
 
+/// Determines if an irc message is an incorrect login message
 pub fn detect_incorrect_login(irc: &String) -> bool {
 	irc.contains(":") &&
 		irc.split(":").nth(2).unwrap_or("") == "Login authentication failed"
 }
 
+/// Determines if an irc message is a malformed oauth message
 pub fn detect_malformed_oauth(
 	irc: &String,
 	channels: &Vec<channel::Channel>
@@ -164,6 +172,7 @@ pub fn detect_malformed_oauth(
 	None
 }
 
+/// Determines if an irc message is a host left message
 pub fn detect_host_left(
 	irc: &String,
 	channels: &Vec<channel::Channel>
@@ -184,6 +193,43 @@ pub fn detect_host_left(
 	None
 }
 
+/// Determines if an irc message is a channel state change message
+pub fn detect_channel_state_changed(
+	irc: &String,
+	channels: &Vec<channel::Channel>
+) -> Option<String> {
+	for chan in channels {
+		match read_type(irc, chan.name()) {
+			Some(rtype) => {
+				if rtype == "ROOMSTATE" {
+					return Some(chan.name().clone());
+				}
+			}
+			_ => {}
+		}
+	}
+	None
+}
+
+/// Determines if an irc message is a user state change message
+pub fn detect_user_state_changed(
+	irc: &String,
+	channels: &Vec<channel::Channel>
+) -> Option<String> {
+	for chan in channels {
+		match read_type(irc, chan.name()) {
+			Some(rtype) => {
+				if rtype == "USERSTATE" {
+					return Some(chan.name().clone());
+				}
+			}
+			_ => {}
+		}
+	}
+	None
+}
+
+/// Determines the read type of an irc message
 pub fn read_type(irc: &String, channel: &String) -> Option<String> {
 
 	if irc.contains(" ") {
@@ -197,15 +243,11 @@ pub fn read_type(irc: &String, channel: &String) -> Option<String> {
 			}
 		}
 		if found {
-			// TODO: Clean this up because this is messy as heck
 			let reg = Regex::new(format!(" #{}", channel).as_ref()).unwrap();
-			let mut split_a = reg.split(irc);
-			let mut split_a_0 = split_a.nth(0).unwrap().to_owned();
-			let mut type_wrap = split_a_0.split(" ");
-			let mut type_copy = type_wrap.clone();
-			let wrap_count = type_wrap.count();
-			let ret = type_copy.nth(wrap_count - 1).unwrap().to_owned();
-			return Some(ret);
+			let mut reg_split = reg.split(irc).nth(0).unwrap()
+									.split(" ");
+			let mut reg_copy = reg_split.clone();
+			return Some(reg_copy.nth(reg_split.count() - 1).unwrap().to_owned());
 		}
 		else {
 			if irc.split(" ").count() > 1 && irc.split(" ").nth(1).unwrap() == String::from("NOTICE") {
