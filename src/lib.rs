@@ -49,7 +49,7 @@ mod tests {
 		TwitchClient::connect(user, pass, channel, logging, on_event);
 
 		//await
-		loop {}
+		//loop {}
 	}
 
 	fn on_event(client: &TwitchClient, event: Event) {
