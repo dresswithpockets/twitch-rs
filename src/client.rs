@@ -6,6 +6,8 @@ use url::Url;
 use std::error::Error;
 use std::{thread, time};
 
+use time::Tm;
+
 use user;
 use channel;
 use message;
@@ -71,8 +73,9 @@ impl TwitchClient {
 		self.out.send(msg)
 	}
 
-	pub fn parse_irc(&self, irc: String) {
+	pub fn parse_irc(&self, irc: &String) {
 
+		// on connected
 		if irc::detect_connected(&irc) {
 			(self.on_event)(self, Event::Connected(
 				self.credentials().user().clone(),
@@ -81,6 +84,7 @@ impl TwitchClient {
 			return;
 		}
 
+		// on new sub
 		match irc::detect_new_subscriber(&irc, &self.channels) {
 			Some(channel) => {
 				(self.on_event)(self, Event::NewSubscriber(
@@ -91,6 +95,9 @@ impl TwitchClient {
 			},
 			_ => {}
 		}
+
+		// on message received
+		
 
 		// TODO: handle irc commands here
 	}
@@ -216,7 +223,7 @@ impl TwitchClient {
 						SendReceiveDirection::Received,
 						line.clone()
 					));
-					self.parse_irc(line);
+					self.parse_irc(&line);
 				}
 			}
 		}
@@ -340,7 +347,7 @@ impl Clone for ConnectionCredentials {
 pub enum Event {
 	None,
 
-	OnLog(String, String, time::Tm),
+	OnLog(String, String, Tm),
 	Connected(String, String), // username, default_channel
 	ChannelJoined(String, String), // username, channel
 	IncorrectLogin(String), // error message
