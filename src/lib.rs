@@ -2,6 +2,7 @@
 extern crate ws;
 extern crate url;
 extern crate regex;
+extern crate time;
 
 mod message;
 mod user;
@@ -54,7 +55,7 @@ mod tests {
 	fn on_event(client: &TwitchClient, event: Event) {
 		match event {
 			Event::MessageReceived(message) => {
-				println!("{}: {}", message.user().display_name(), message.text());
+				println!("{}: {}", message.display_name(), message.text());
 			}
 			_ => {}
 		}

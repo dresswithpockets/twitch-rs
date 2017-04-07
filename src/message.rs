@@ -1,6 +1,7 @@
 
-use user::{UserType, UserState;
+use user::{UserType, UserState};
 use std::collections::HashMap;
+use std::ops::Div;
 
 pub struct ChatMessage {
 
@@ -27,53 +28,105 @@ pub struct ChatMessage {
 	// TODO: cheer badge
 	bits: i32,
 	bits_usd: f32,
-	user: User,
+	//user: User,
 }
 
 // non-static functions
 impl ChatMessage {
 
+	pub fn bot_username(&self) -> &String {
+		&self.bot_username
+	}
+
+	pub fn user_id(&self) -> &String {
+		&self.user_id
+	}
+
+	pub fn username(&self) -> &String {
+		&self.username
+	}
+
+	pub fn display_name(&self) -> &String {
+		&self.display_name
+	}
+
+	pub fn hex_color(&self) -> &String {
+		&self.hex_color
+	}
+
 	pub fn text(&self) -> &String {
 		&self.text
 	}
 
-	pub fn user(&self) -> &User {
-		&self.user
+	pub fn user_type(&self) -> &UserType {
+		&self.user_type
 	}
+
+	pub fn channel(&self) -> &String {
+		&self.channel
+	}
+
+	pub fn is_subscriber(&self) -> &bool {
+		&self.is_subscriber
+	}
+
+	pub fn is_turbo(&self) -> &bool {
+		&self.is_turbo
+	}
+
+	pub fn is_moderator(&self) -> &bool {
+		&self.is_moderator
+	}
+
+	pub fn is_broadcaster(&self) -> &bool {
+		&self.is_broadcaster
+	}
+
+	/*pub fn user(&self) -> &User {
+		&self.user
+	}*/
 }
 
 // static functions
 impl ChatMessage {
 
-	pub fn from(bot_username: &String, irc: &String) -> ChatMessage {
+	pub fn from(
+		bot_username: String, 
+		irc: String,
+		chan_emotes: &Vec<String>,
+		replace_emotes: bool
+	) -> ChatMessage {
 
 		let mut user_type = UserType::Viewer;
 		let mut parsed_channel = String::new();
 		let mut parsed_name = String::new();
 		let mut badge_map = HashMap::<String, String>::new();
 		let mut bits = 0;
-		let mut usd: f32 = 0;
-		let mut 
+		let mut usd: f32 = 0.0;
 
 		let parts = irc.split(";");
 		for part in parts {
 			if part.contains("!") {
 				if parsed_channel.is_empty() {
-					parsed_channel = part.split("#").nth(1).unwrap().split(" ").nth(0).unwrap();
+					parsed_channel = part.split("#")
+						.nth(1).unwrap().split(" ")
+						.nth(0).unwrap().to_owned();
 				}
 				if parsed_name.is_empty() {
-					parsed_name = part.split("!").nth(1).unwrap().split("@").nth(0).unwrap();
+					parsed_name = part.split("!")
+						.nth(1).unwrap().split("@")
+						.nth(0).unwrap().to_owned();
 				}
-				let eq_split = part.split("=");
+				let mut eq_split = part.split("=");
 				match eq_split.nth(1) {
 					Some(item) =>  {
 						if eq_split.nth(1).unwrap().contains(" ") {
 							match eq_split.nth(1).unwrap().split(" ").nth(0).unwrap() {
-								"mod" => user_type = UserType::Moderator;
-								"global_mod" => user_type = UserType::GlobalModerator;
-								"admin" => user_type = UserType::Admin;
-								"staff" => user_type = UserType::Staff;
-								_ => user_type = UserType::Viewer;
+								"mod" => user_type = UserType::Moderator,
+								"global_mod" => user_type = UserType::GlobalModerator,
+								"admin" => user_type = UserType::Admin,
+								"staff" => user_type = UserType::Staff,
+								_ => user_type = UserType::Viewer,
 							}
 						}
 					},
@@ -86,30 +139,31 @@ impl ChatMessage {
 					if badges.contains(",") {
 						for badge in badges.split(",") {
 							badge_map.insert(
-								badge.split("/").nth(0).unwrap(),
-								badge.split("/").nth(1).unwrap()
+								badge.split("/").nth(0).unwrap().to_owned(),
+								badge.split("/").nth(1).unwrap().to_owned()
 							);
 						}
 					}
 					else {
 						badge_map.insert(
-							badges.split("/").nth(0).unwrap(),
-							badges.split("/").nth(1).unwrap()
+							badges.split("/").nth(0).unwrap().to_owned(),
+							badges.split("/").nth(1).unwrap().to_owned()
 						);
 					}
 				}
 			}
 			else if part.contains("bits=") {
 				bits = part.split("=").nth(1).unwrap().parse::<i32>().unwrap();
-				usd = bits_to_usd(&bits);
+				usd = ChatMessage::bits_to_usd(&bits);
 			}
 			// TODO: check for color, display-name, emotes, subscriber, turbo, user-id, and mod
 		}
 		// TODO: continue parsing irc message, see TwitchClient.cs:161
+		unimplemented!()
 	}
 
 	pub fn to_bool(data: &String) -> bool {
-		data == String::from("1")
+		data == &String::from("1")
 	}
 
 	pub fn bits_to_usd(bits: &i32) -> f32 {
@@ -123,20 +177,20 @@ impl ChatMessage {
 		25000 bits = $308.00 (12%)
 		*/
 
-		return if bits < 1500 {
-			(bits / 100) * 1.4
+		return if bits.lt(&1500) {
+			bits.div(100) as f32 * 1.4
 		}
-		else if bits < 5000 {
-			(bits / 1500) * 19.95
+		else if bits.lt(&5000) {
+			bits.div(1500) as f32 * 19.95
 		}
-		else if bits < 10000 {
-			(bits / 5000) * 64.40
+		else if bits.lt(&10000) {
+			bits.div(5000) as f32 * 64.40
 		}
-		else if bits < 25000 {
-			(bits / 10000) * 126
+		else if bits.lt(&25000) {
+			bits.div(10000) as f32 * 126.0
 		}
 		else {
-			(bits / 25000) * 308
+			bits.div(25000) as f32 * 308.0
 		};
 	}
 }
