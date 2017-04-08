@@ -4,14 +4,15 @@ extern crate url;
 extern crate regex;
 extern crate time;
 
-mod message;
-mod user;
-mod client;
-mod kraken;
-mod irc;
-mod channel;
-mod rfc;
-mod subscriber;
+pub mod message;
+pub mod user;
+pub mod client;
+pub mod kraken;
+pub mod irc;
+pub mod channel;
+pub mod rfc;
+pub mod subscriber;
+mod util;
 
 use client::{TwitchClient, Event};
 
@@ -32,9 +33,13 @@ mod tests {
 		let mut user = String::from("");
 		let mut pass = String::from("");
 		let mut channel = String::from("");
-		let mut logging = false;
+		let mut cmd = Vec::<String>::new();
+		cmd.push(String::from("!"));
+		let mut logging = true;
 
-		for (index, arg) in env::args().enumerate() {
+		println!("got here");
+		/*for (index, arg) in env::args().enumerate() {
+			println!("not here");
 			if index == 0 { continue; }
 
 			match arg.as_ref() {
@@ -42,14 +47,22 @@ mod tests {
 				"-p" => pass = get_arg!(index + 1),
 				"-c" => channel = get_arg!(index + 1),
 				"-l" => logging = true,
+				"-i" => cmd.push(get_arg!(index + 1)),
 				_ => panic!("Unexpected argument passed: {}", arg),
+			}
+		}*/
+
+		match TwitchClient::connect(user, pass, channel, logging, cmd, on_event) {
+			Ok(()) => {
+				println!("Connection fine");
+			}
+			_ => {
+				println!("It looks like there was an error");
 			}
 		}
 
-		TwitchClient::connect(user, pass, channel, logging, on_event);
-
 		//await
-		//loop {}
+		loop {}
 	}
 
 	fn on_event(client: &TwitchClient, event: Event) {
