@@ -11,7 +11,7 @@ pub struct NewSubscriber {
 }
 
 impl NewSubscriber {
-	pub fn from(irc: &String) -> NewSubscriber {
+	pub fn from(irc: String) -> NewSubscriber {
 		let channel = irc.split("#").nth(1).unwrap().split(" ").nth(0).unwrap().replace(" ", "");
 		let mut name = irc.split(":").nth(2).unwrap().split(" ").nth(0).unwrap().replace(" ", "");
 		if name.contains(":") {
