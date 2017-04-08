@@ -93,8 +93,8 @@ impl ChatMessage {
 	pub fn from(
 		bot_username: String, 
 		irc: String,
-		chan_emotes: &Vec<String>,
-		replace_emotes: bool
+		/*chan_emotes: &mut Vec<String>,
+		replace_emotes: bool*/
 	) -> ChatMessage {
 
 		let mut user_type = UserType::Viewer;
