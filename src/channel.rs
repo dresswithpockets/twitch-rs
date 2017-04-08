@@ -14,14 +14,14 @@ use std::str::Split;
 
 pub struct Channel {
 	name: String,
-	state: ChannelState
+	state: Option<ChannelState>
 }
 
 impl Channel {
-	pub fn from(name: String, state: ChannelState) -> Channel {
+	pub fn from(name: String) -> Channel {
 		Channel {
 			name: name,
-			state: state,
+			state: None,
 		}
 	}
 
@@ -29,8 +29,23 @@ impl Channel {
 		&self.name
 	}
 
-	pub fn state(&self) -> &ChannelState {
+	pub fn state(&self) -> &Option<ChannelState> {
 		&self.state
+	}
+}
+
+impl Clone for Channel {
+	fn clone(&self) -> Channel {
+
+		Channel {
+			name: self.name.clone(),
+			state: match self.state {
+				Some(ref st) => {
+					Some(st.clone())
+				}
+				_ => { None }
+			}
+		}
 	}
 }
 
@@ -83,6 +98,21 @@ impl ChannelState {
 			emote_only: emote,
 			channel: channel,
 			broadcaster_lang: lang,
+		}
+	}
+}
+
+impl Clone for ChannelState {
+	fn clone(&self) -> ChannelState {
+
+		ChannelState {
+			r9k_mode: self.r9k_mode.clone(),
+			sub_only: self.sub_only.clone(),
+			slow_mode: self.slow_mode.clone(),
+			emote_only: self.emote_only.clone(),
+
+			channel: self.channel.clone(),
+			broadcaster_lang: self.broadcaster_lang.clone(),
 		}
 	}
 }
