@@ -38,31 +38,31 @@ pub struct TwitchClient {
 }
 
 impl TwitchClient {
-	pub fn out(&self) -> &ws::Sender {
-		&self.out
+	pub fn out(&self) -> ws::Sender {
+		self.out
 	}
 
-	pub fn credentials(&self) -> &ConnectionCredentials {
-		&self.credentials
+	pub fn credentials(&self) -> ConnectionCredentials {
+		self.credentials
 	}
 
-	pub fn default_channel(&self) -> &String {
-		&self.default_channel
+	pub fn default_channel(&self) -> &str {
+		self.default_channel.as_str()
 	}
 }
 
 impl TwitchClient {
 	pub fn connect(
-		user: String,
-		auth: String,
-		channel: String,
+		user: &str,
+		auth: &str,
+		channel: &str,
 		log: bool,
-		cmd_idents: Vec<String>,
+		cmd_idents: &[&str],
 		on_event: fn(&TwitchClient, Event),
 	) -> ws::Result<()> {
 
 		if log {
-			println!("twitch-rs initialized. Attempting to connect to twitch");
+			println!("twitch-rs initialized. StringAttempting to connect to twitch");
 		}
 
 		// TODO: add command identifiers for chat and whispers
@@ -75,29 +75,28 @@ impl TwitchClient {
 				TwitchClient {
 					out: out,
 
-					credentials: creds.clone(),
-					default_channel: channel.clone(),
-					logging: log.clone(),
+					credentials: creds,
+					default_channel: channel.to_string(),
+					logging: log,
 
 					channels: Vec::new(),
 					channel_queue: VecDeque::new(),
 					currently_joining: false,
 
-					cmd_idents: cmd_idents.to_vec(),
+					cmd_idents: cmd_idents.into_iter().map(|x| x.to_string()).collect(),
 
 					on_event: on_event,
 				}
 			}
-		);
-
-		Ok(())
+		)
 	}
 
-	pub fn web_send(&self, msg: String) -> ws::Result<()> {
+	pub fn web_send(&self, msg: &str) -> ws::Result<()> {
+		println!("Sending: {}", msg);
 		self.out.send(msg)
 	}
 
-	pub fn parse_irc(&mut self, irc: &String) {
+	pub fn parse_irc(&mut self, irc: &str) {
 
 		let mut msg_found = false;
 
@@ -115,7 +114,7 @@ impl TwitchClient {
 			Some(channel) => {
 				(self.on_event)(self, Event::NewSubscriber(
 					channel,
-					subscriber::NewSubscriber::from(irc.clone())
+					subscriber::NewSubscriber::from(irc)
 				));
 				return;
 			}
@@ -126,31 +125,105 @@ impl TwitchClient {
 		match irc::irc_message_received(&irc, &self.channels) {
 			Some(channel) => {
 				msg_found = true;
+				println!("received!!!");
 				(self.on_event)(self, Event::MessageReceived(
 					message::ChatMessage::from(
 						self.credentials().user().clone(),
 						irc.clone()
 					)
-				))
+				));
+				println!("oh boy...");
 			}
 			_ => {}
 		}
 
+		println!("command coming up");
+
 		// on command received
-		match irc::irc_command_received(
+		if self.channels.iter().any(|chan| {
+			self.cmd_idents.iter().any(|cmd| {
+				irc::irc_command_received(
+					self.credentials().user(),
+					&irc,
+					chan.name(),
+					cmd.as_str()
+				)
+			})
+		}) {
+			let msg = message::ChatMessage::from(
+					self.credentials().user(),
+					irc
+				);
+			let cmd = if msg.text().split(" ").nth(0).unwrap_or("") != "" {
+				util::sub(
+					msg.text().split(" ").nth(0).unwrap_or(""),
+					1,
+					msg.text().split(" ").nth(0).unwrap_or("").len() - 1
+				)
+			}
+			else {
+				util::sub(msg.text(), 1, msg.text().len() - 1)
+			};
+
+			let cmd_prefix =
+				self.cmd_idents.iter()
+					.filter(|&x| msg.text().starts_with(x))
+					.next()
+					.unwrap_or(&DEFAULT_COMMAND_PREFIX.to_string());
+			
+			let args_string = 
+				if msg.text().contains(" ") &&
+					msg.text().split(" ").nth(0).unwrap_or("") != ""
+				{
+					msg.text().replace(
+						&format!("{} ", msg.text().split(" ").nth(0).unwrap_or("")),
+						""
+					).as_str()
+				}
+				else {
+					""
+				}
+			;
+
+			let args: &[&str] =
+			if !msg.text().contains("\"") ||
+				msg.text().chars().map(|x| x == '"').count() % 2 == 1
+			{
+
+				&msg.text().split(" ")
+					.filter(|arg| {
+						arg != &format!("{}{}", cmd_prefix, cmd)
+					}).collect::<Vec<_>>()
+			}
+			else {
+				util::args_with_quotes(&args_string)
+			};
+			
+			(self.on_event)(self, Event::ChatCommandReceived(
+				msg,
+				cmd,
+				args,
+				args_string,
+				cmd_prefix
+			));
+				
+			return;
+		}
+		
+		/*if irc::irc_command_received(
 			self.credentials().user(),
 			&irc,
 			&self.channels,
-			&self.cmd_idents
+			&self.cmd_idents.iter().map(|x| x.as_str()).collect::<Vec<_>>()[..]
 		) {
 			Some(channel) => {
 				let msg = message::ChatMessage::from(
-					self.credentials().user().clone(),
-					irc.clone()
+					self.credentials().user(),
+					irc
 				);
 				let cmd = if msg.text().split(" ").nth(0).unwrap_or("") != "" {
 					util::sub(
-						&msg.text().split(" ").nth(0).unwrap_or("").to_owned(),
+						msg.text().split(" ").nth(0).unwrap_or(""),
 						1,
 						msg.text().split(" ").nth(0).unwrap_or("").len() - 1
 					)
@@ -161,10 +234,9 @@ impl TwitchClient {
 
 				let cmd_prefix =
 					self.cmd_idents.iter()
-						.filter(|x| msg.text().starts_with(*x))
+						.filter(|&x| msg.text().starts_with(x))
 						.next()
-						.unwrap_or(&DEFAULT_COMMAND_PREFIX.to_owned())
-						.clone();
+						.unwrap_or(&DEFAULT_COMMAND_PREFIX.to_string());
 				
 				let args_string = 
 					if msg.text().contains(" ") &&
@@ -173,24 +245,22 @@ impl TwitchClient {
 						msg.text().replace(
 							&format!("{} ", msg.text().split(" ").nth(0).unwrap_or("")),
 							""
-						)
+						).as_str()
 					}
 					else {
-						String::from("")
+						""
 					}
 				;
 
-				let args: Vec<String> =
+				let args: &[&str] =
 				if !msg.text().contains("\"") ||
 					msg.text().chars().map(|x| x == '"').count() % 2 == 1
 				{
 
-					msg.text().split(" ")
+					&msg.text().split(" ")
 						.filter(|arg| {
-							arg.to_owned() != format!("{}{}", cmd_prefix, cmd)
-						})
-						.map(|x| x.to_owned())
-						.collect()
+							arg != &format!("{}{}", cmd_prefix, cmd)
+						}).collect::<Vec<_>>()
 				}
 				else {
 					util::args_with_quotes(&args_string)
@@ -207,9 +277,10 @@ impl TwitchClient {
 				return;
 			}
 			_ => {}
-		}
+		}*/
 
 		if msg_found {
+			println!("found message, leaving parse_irc");
 			return;
 		}
 
@@ -223,7 +294,7 @@ impl TwitchClient {
 					(self.on_event)(self, Event::ChannelJoined(
 						channel,
 						irc.split("!").nth(1).unwrap_or("")
-							.split("@").nth(0).unwrap_or("").to_owned()
+							.split("@").nth(0).unwrap_or("")
 					));
 				}
 				else {
@@ -241,7 +312,7 @@ impl TwitchClient {
 		match irc::irc_user_left(&irc, &self.channels) {
 			Some(channel) => {
 				let username = irc.split(":").nth(1).unwrap_or("")
-								.split("!").nth(0).unwrap_or("").to_owned();
+								.split("!").nth(0).unwrap_or("");
 				if username.to_lowercase() == self.credentials().user().to_lowercase() {
 					
 					let pos = self.channels.iter().position(|x| {
@@ -269,7 +340,7 @@ impl TwitchClient {
 		match irc::irc_moderator_joined(&irc, &self.channels) {
 			Some(channel) => {
 				(self.on_event)(self, Event::ModeratorJoined(
-					irc.split(" ").nth(4).unwrap_or("").to_owned(),
+					irc.split(" ").nth(4).unwrap_or(""),
 					channel
 				));
 				return;
@@ -281,7 +352,7 @@ impl TwitchClient {
 		match irc::irc_moderator_left(&irc, &self.channels) {
 			Some(channel) => {
 				(self.on_event)(self, Event::ModeratorLeft(
-					irc.split(" ").nth(4).unwrap_or("").to_owned(),
+					irc.split(" ").nth(4).unwrap_or(""),
 					channel
 				));
 				return;
@@ -294,7 +365,7 @@ impl TwitchClient {
 			self.disconnect();
 
 			(self.on_event)(self, Event::IncorrectLogin(
-				String::from("Invalid username or password/oauth")
+				"Invalid username or password/oauth"
 			));
 			return;
 		}
@@ -305,27 +376,155 @@ impl TwitchClient {
 				self.disconnect();
 
 				(self.on_event)(self, Event::IncorrectLogin(
-					String::from("Invalid OAuth key. Remember to add 'oauth:' as a prefix.")
+					"Invalid OAuth key. Remember to add 'oauth:' as a prefix."
 				));
 				return;
 			}
 			_ => {}
 		}
 
+		// on host left
+		match irc::irc_host_left(&irc, &self.channels) {
+			Some(_) => {
+				(self.on_event)(self, Event::HostLeft(
+					None
+				));
+			}
+			_ => {}
+		}
+
+		// on channel state changed
+		match irc::irc_channel_state_changed(&irc, &self.channels) {
+			Some(channel) => {
+				(self.on_event)(self, Event::ChannelStateChanged(
+					channel::ChannelState::from(irc.clone()),
+					channel
+				));
+			}
+			_ => {}
+		}
+
+		// on user state changed
+		match irc::irc_user_state_changed(&irc, &self.channels) {
+			Some(channel) => {
+				// TODO: Implement state change
+				return;
+			}
+			_ => {}
+		}
+
+		// on resubscriber
+		match irc::irc_re_subscriber(&irc, &self.channels) {
+			Some(channel) => {
+				(self.on_event)(self, Event::ReSubscriber(
+					channel,
+					subscriber::ReSubscriber::from(irc.clone())
+				));
+				return;
+			}
+			_ => {}
+		}
+
+		// on ping received
+		if irc::irc_ping(&irc) {
+			self.web_send("PONG");
+			return;
+		}
+
+		// on pong received (do nothing but return)
+		if irc::irc_pong(&irc) {
+			return;
+		}
+
+		// on hosting stopped
+		if irc::irc_hosting_stopped(&irc) {
+			let viewers = irc.split(" ").nth(4).unwrap_or("0").parse::<i32>();
+			(self.on_event)(self, Event::HostingStopped(
+				viewers.unwrap_or(0),
+				util::sub(
+					irc.split(" ").nth(2).unwrap_or(""),
+					2,
+					irc.split(" ").nth(2).unwrap_or("").len()
+				)
+			));
+			return;
+		}
+
+		// on hosting started
+		if irc::irc_hosting_started(&irc) {
+			let viewers = irc.split(" ").nth(4).unwrap_or("0").parse::<i32>();
+			(self.on_event)(self, Event::HostingStarted(
+				viewers.unwrap_or(0),
+				util::sub(
+					irc.split(" ").nth(2).unwrap_or(""),
+					2,
+					irc.split(" ").nth(2).unwrap_or("").len()
+				),
+				util::sub(
+					irc.split(" ").nth(3).unwrap_or(""),
+					2,
+					irc.split(" ").nth(2).unwrap_or("").len()
+				)
+			));
+			return;
+		}
+
+		// on existing users detected
+		match irc::irc_existing_users(&irc, self.credentials().user(), &self.channels) {
+			Some(channel) => {
+				(self.on_event)(self, Event::ExistingUsersDetected(
+					channel.clone(),
+					irc.replace(
+						&format!(
+							":{user}.tmi.twitch.tv 353 {user} = #{chan} :",
+							user = self.credentials().user(), chan = channel
+						),
+						""
+					).split(" ").collect()
+				));
+				return;
+			}
+			_ => {}
+		}
+
+		// on now hosting
+		match irc::irc_now_hosting(&irc, &self.channels) {
+			Some(channel) => {
+				(self.on_event)(self, Event::NowHosting(
+					channel,
+					irc.split(" ").nth(6).unwrap_or("").replace(".", "").as_str()
+				));
+				return;
+			}
+			_ => {}
+		}
+
+		// on channel join
+		match irc::irc_join_channel_completed(&irc) {
+			Some(channel) => {
+				self.currently_joining = true;
+				self.check_join_queue();
+				return;
+			}
+			_ => {}
+		}
+
 		// TODO: handle irc commands here
+
+		self.log(format!("Unaccounted for: {}", irc));
 	}
 
-	pub fn join_channel(&mut self, channel: &String) {
+	pub fn join_channel(&mut self, channel: &str) {
 		// TODO: Join channel
 		let chan = channel.to_lowercase();
-		let chan_names: Vec<String> = self.channels.iter().map(|c| c.name().clone()).collect::<Vec<String>>();
+		let chan_names: Vec<String> = self.channels.iter().map(|c| c.name().to_string()).collect::<Vec<String>>();
 
-		if chan_names.contains(&chan) {
+		if chan_names.contains(&channel.to_lowercase()) {
 			return;
 		}
 
 		self.channel_queue.push_back(channel::Channel::from(
-			channel.clone()
+			channel
 		));
 
 		if !self.currently_joining {
@@ -333,7 +532,7 @@ impl TwitchClient {
 		}
 	}
 
-	pub fn send_jc_message(&self, channel: &channel::Channel, message: &String) {
+	pub fn send_jc_message(&self, channel: &channel::Channel, message: &str) {
 		// TODO: Check if messages are throttled (refer to TwitchClient.cs:297)
 
 		self.web_send(format!(
@@ -341,22 +540,22 @@ impl TwitchClient {
 			user = self.credentials().user(),
 			chan = channel.name(),
 			msg = message
-		));
+		).as_ref());
 
 	}
 
-	pub fn send_channel_message(&self, channel: &String, message: &String) {
+	pub fn send_channel_message(&self, channel: &str, message: &str) {
 		self.send_jc_message(self.channel_from_string(channel).unwrap(), message);
 	}
 
-	pub fn send_message(&self, message: &String) {
+	pub fn send_message(&self, message: &str) {
 		match self.channels.first() {
 			Some(channel) => self.send_jc_message(channel, message),
 			None => {}
 		};
 	}
 
-	pub fn send_whisper(&self, receiver: String, message: String) {
+	pub fn send_whisper(&self, receiver: &str, message: &str) {
 
 		// TODO: Check if whispers are throttled (refer to TwitchClient.cs:333)
 
@@ -365,14 +564,14 @@ impl TwitchClient {
 			user = self.credentials().user(),
 			r = receiver,
 			m = message
-		));
+		).as_ref());
 		(self.on_event)(self, Event::WhisperSent(
 			receiver,
 			message
 		));
 	}
 
-	pub fn channel_from_string(&self, channel: &String) -> Result<&channel::Channel, ()> {
+	pub fn channel_from_string(&self, channel: &str) -> Result<&channel::Channel, ()> {
 		for (index, chan) in self.channels.iter().enumerate() {
 			if chan.name().to_lowercase() == channel.to_lowercase() {
 				return Ok(&self.channels[index]);
@@ -449,9 +648,9 @@ impl TwitchClient {
 			)
 		)?;
 
-		self.web_send(String::from("CAP REQ twitch.tv/membership"))?;
-		self.web_send(String::from("CAP REQ twitch.tv/commands"))?;
-		self.web_send(String::from("CAP REQ twitch.tv/tags"))?;
+		self.web_send("CAP REQ twitch.tv/membership")?;
+		self.web_send("CAP REQ twitch.tv/commands")?;
+		self.web_send("CAP REQ twitch.tv/tags")?;
 
 		if !self.default_channel().is_empty() {
 			let chan = self.default_channel().clone();
@@ -470,7 +669,6 @@ impl TwitchClient {
 		let lines = data.split("\n");
 
 		for line in lines {
-			let line = String::from(line);
 			if line.len() > 1 {
 				self.log(format!("Received: {}", line));
 				if is_text {
@@ -478,7 +676,7 @@ impl TwitchClient {
 						SendReceiveDirection::Received,
 						line.clone()
 					));
-					self.parse_irc(&line);
+					self.parse_irc(line);
 				}
 			}
 		}
@@ -493,7 +691,7 @@ impl TwitchClient {
 
 		(self.on_event)(self, Event::Disconnected(
 			self.credentials().user().clone(),
-			reason.to_owned()
+			reason
 		));
 		self.channels.clear();
 	}
@@ -508,7 +706,7 @@ impl TwitchClient {
 
 		(self.on_event)(self, Event::ConnectionError(
 			self.credentials().user().clone(),
-			err.description().to_owned()
+			err.description()
 		));
 	}
 }
@@ -541,14 +739,14 @@ pub struct ConnectionCredentials {
 
 impl ConnectionCredentials {
 
-	pub fn from(user: String, auth: String) -> ConnectionCredentials {
-		ConnectionCredentials::from_host(user, auth, DEFAULT_HOST.to_owned(), DEFAULT_PORT)
+	pub fn from(user: &str, auth: &str) -> ConnectionCredentials {
+		ConnectionCredentials::from_host(user, auth, DEFAULT_HOST, DEFAULT_PORT)
 	}
 
 	pub fn from_host(
-		user: String,
-		auth: String,
-		host: String,
+		user: &str,
+		auth: &str,
+		host: &str,
 		port: i32
 	) -> ConnectionCredentials {
 
@@ -558,132 +756,41 @@ impl ConnectionCredentials {
 		let mut auth = auth;
 
 		if !auth.contains(":") {
-			auth = format!("oauth:{}", auth.replace("oauth", ""));
+			auth = format!("oauth:{}", auth.replace("oauth", "")).as_str();
 		}
 
 		ConnectionCredentials {
-			user: user,
-			auth: auth,
-			host: host,
+			user: user.to_string(),
+			auth: auth.to_string(),
+			host: host.to_string(),
 			port: port,
 		}
 	}
 
-	pub fn user(&self) -> &String {
-		&self.user
+	pub fn user(&self) -> &str {
+		self.user.as_str()
 	}
 
-	pub fn auth(&self) -> &String {
-		&self.auth
+	pub fn auth(&self) -> &str {
+		self.auth.as_str()
 	}
 
-	pub fn host(&self) -> &String {
-		&self.host
+	pub fn host(&self) -> &str {
+		self.host.as_str()
 	}
 
-	pub fn port(&self) -> &i32 {
-		&self.port
+	pub fn port(&self) -> i32 {
+		self.port
 	}
 }
 
 impl Clone for ConnectionCredentials {
 	fn clone(&self) -> ConnectionCredentials {
 		ConnectionCredentials {
-			user: self.user.clone(),
-			auth: self.auth.clone(),
-			host: self.host.clone(),
-			port: self.port.clone()
+			user: self.user,
+			auth: self.auth,
+			host: self.host,
+			port: self.port
 		}
 	}
-}
-
-/// The `Event` type. Represents a twitch chat event
-pub enum Event {
-	/// Invalid Event
-	None,
-
-	/// username, data, datetime
-	OnLog(String, String, Tm),
-	
-	/// username, default_channel
-	Connected(String, String),
-	
-	/// username, channel
-	ChannelJoined(String, String),
-	
-	/// error_message
-	IncorrectLogin(String),
-	
-	/// channel_state, channel
-	ChannelStateChanged(channel::ChannelState, String),
-	
-	/// user_state
-	UserStateChanged(user::UserState),
-	
-	/// received_message
-	MessageReceived(message::ChatMessage),
-	
-	/// sent_message
-	MessageSent(message::ChatMessage),
-
-	/// receive_message
-	WhisperSent(String, String),
-	
-	/// command_message, command, args, args_as_string, command_prefix
-	ChatCommandReceived(
-		message::ChatMessage,
-		String,
-		Vec<String>,
-		String,
-		String,
-	),
-
-	WhisperCommandReceived(),
-
-	/// username, channel
-	UserJoined(String, String),
-
-	/// username, channel
-	ModeratorJoined(String, String),
-
-	/// username, channel
-	ModeratorLeft(String, String),
-
-	/// channel, new_sub
-	NewSubscriber(String, subscriber::NewSubscriber),
-	ReSubcriber(),
-	HostLeft(),
-	ExistingUsersDetected(),
-
-	/// username, channel
-	UserLeft(String, String),
-
-	HostingStarted(),
-	HostingStopped(),
-
-	/// username, reason
-	Disconnected(String, String),
-
-	// username, message
-	ConnectionError(String, String),
-
-	/// channel
-	ChatCleared(String),
-	UserTimedout(),
-	LeftChannel(),
-	UserBanned(),
-	ModeratorsReceived(),
-	ChatColorChanged(),
-
-	/// direction, data
-	SendReceiveData(SendReceiveDirection, String),
-	NowHosting(),
-
-	/// bot_username, host_channel, viewers, channel_being_hosted
-	BeingHosted(String, String, i32, String),
-}
-
-pub enum SendReceiveDirection {
-	Sent,
-	Received,
 }

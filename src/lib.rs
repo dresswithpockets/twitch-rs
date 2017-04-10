@@ -30,9 +30,10 @@ mod tests {
 	#[test]
 	fn it_works() {
 
-		let mut user = String::from("");
-		let mut pass = String::from("");
-		let mut channel = String::from("");
+		//xn3lxlkbmjs7f6pj1gquvtfgnnzn08
+		let mut user = String::from("phxvyper");
+		let mut pass = String::from("oauth:kt3w160ut7p03og2no2s1zowyef2eo");
+		let mut channel = String::from("phxvyper");
 		let mut cmd = Vec::<String>::new();
 		cmd.push(String::from("!"));
 		let mut logging = true;
@@ -67,6 +68,12 @@ mod tests {
 
 	fn on_event(client: &TwitchClient, event: Event) {
 		match event {
+			Event::IncorrectLogin(message) => {
+				println!("{}", message);
+			},
+			Event::Disconnected(user, message) => {
+				println!("{}: {}", user, message);
+			},
 			Event::MessageReceived(message) => {
 				println!("{}: {}", message.display_name(), message.text());
 			}

@@ -1,13 +1,13 @@
 
-pub fn sub(str: &String, a: usize, b: usize) -> String {
-    str[a .. str.char_indices().nth(b).unwrap().0].to_owned()
+pub fn sub(str: &str, a: usize, b: usize) -> &str {
+    &str[a .. str.char_indices().nth(b).unwrap().0]
 }
 
-pub fn args_with_quotes(args_string: &String) -> Vec<String> {
-    let mut args = Vec::<String>::new();
+pub fn args_with_quotes(args_string: &str) -> &[&str] {
+    let mut args = Vec::new();
 
     if args_string.is_empty() {
-        return Vec::<String>::new();
+        return &args;
     }
 
     let mut previous_quoted = !args_string.starts_with("\"");
@@ -17,7 +17,7 @@ pub fn args_with_quotes(args_string: &String) -> Vec<String> {
         }
 
         if !previous_quoted {
-            args.push(arg.to_owned());
+            args.push(arg);
             previous_quoted = true;
             continue;
         }
@@ -33,10 +33,10 @@ pub fn args_with_quotes(args_string: &String) -> Vec<String> {
                 continue;
             }
 
-            args.push(dyn_arg.to_owned());
+            args.push(dyn_arg);
             previous_quoted = false;
         }
     }
 
-    return args.clone();
+    return &args;
 }
