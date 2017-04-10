@@ -34,52 +34,52 @@ pub struct ChatMessage {
 // non-static functions
 impl ChatMessage {
 
-	pub fn bot_username(&self) -> &String {
-		&self.bot_username
+	pub fn bot_username(&self) -> &str {
+		self.bot_username.as_str()
 	}
 
-	pub fn user_id(&self) -> &String {
-		&self.user_id
+	pub fn user_id(&self) -> &str {
+		self.user_id.as_str()
 	}
 
-	pub fn username(&self) -> &String {
-		&self.username
+	pub fn username(&self) -> &str {
+		self.username.as_str()
 	}
 
-	pub fn display_name(&self) -> &String {
-		&self.display_name
+	pub fn display_name(&self) -> &str {
+		self.display_name.as_str()
 	}
 
-	pub fn hex_color(&self) -> &String {
-		&self.hex_color
+	pub fn hex_color(&self) -> &str {
+		self.hex_color.as_str()
 	}
 
-	pub fn text(&self) -> &String {
-		&self.text
+	pub fn text(&self) -> &str {
+		self.text.as_str()
 	}
 
-	pub fn user_type(&self) -> &UserType {
-		&self.user_type
+	pub fn user_type(&self) -> UserType {
+		self.user_type
 	}
 
-	pub fn channel(&self) -> &String {
-		&self.channel
+	pub fn channel(&self) -> &str {
+		self.channel.as_str()
 	}
 
-	pub fn is_subscriber(&self) -> &bool {
-		&self.is_subscriber
+	pub fn is_subscriber(&self) -> bool {
+		self.is_subscriber
 	}
 
-	pub fn is_turbo(&self) -> &bool {
-		&self.is_turbo
+	pub fn is_turbo(&self) -> bool {
+		self.is_turbo
 	}
 
-	pub fn is_moderator(&self) -> &bool {
-		&self.is_moderator
+	pub fn is_moderator(&self) -> bool {
+		self.is_moderator
 	}
 
-	pub fn is_broadcaster(&self) -> &bool {
-		&self.is_broadcaster
+	pub fn is_broadcaster(&self) -> bool {
+		self.is_broadcaster
 	}
 
 	/*pub fn user(&self) -> &User {
@@ -90,38 +90,50 @@ impl ChatMessage {
 // static functions
 impl ChatMessage {
 
-	pub fn from(
-		bot_username: String, 
-		irc: String,
 		/*chan_emotes: &mut Vec<String>,
 		replace_emotes: bool*/
+	pub fn from(
+		bot_username: &str, 
+		irc: &str,
 	) -> ChatMessage {
 
 		let mut user_type = UserType::Viewer;
-		let mut parsed_channel = String::new();
-		let mut parsed_name = String::new();
+		let mut user_id = "";
+		let mut channel = "";
+		let mut name = "";
+		let mut display_name = "";
+		let mut text = "";
+		let mut hex_color = "";
 		let mut badge_map = HashMap::<String, String>::new();
 		let mut bits = 0;
 		let mut usd: f32 = 0.0;
 
+		let mut is_subscriber = false;
+		let mut is_turbo = false;
+		let mut is_moderator = false;
+		let mut is_me = false;
+		let mut is_broadcaster = false;
+
+		let mut no_emot_text: Option<String> = None;
+
 		let parts = irc.split(";");
 		for part in parts {
 			if part.contains("!") {
-				if parsed_channel.is_empty() {
-					parsed_channel = part.split("#")
+				if channel.is_empty() {
+					channel = part.split("#")
 						.nth(1).unwrap().split(" ")
-						.nth(0).unwrap().to_owned();
+						.nth(0).unwrap();
 				}
-				if parsed_name.is_empty() {
-					parsed_name = part.split("!")
+				if name.is_empty() {
+					name = part.split("!")
 						.nth(1).unwrap().split("@")
-						.nth(0).unwrap().to_owned();
+						.nth(0).unwrap();
 				}
 				let mut eq_split = part.split("=");
 				match eq_split.nth(1) {
 					Some(item) =>  {
-						if eq_split.nth(1).unwrap().contains(" ") {
-							match eq_split.nth(1).unwrap().split(" ").nth(0).unwrap() {
+						if item.contains(" ") {
+							match item.split(" ").nth(0).unwrap() {
 								"mod" => user_type = UserType::Moderator,
 								"global_mod" => user_type = UserType::GlobalModerator,
 								"admin" => user_type = UserType::Admin,
@@ -156,14 +168,32 @@ impl ChatMessage {
 				bits = part.split("=").nth(1).unwrap().parse::<i32>().unwrap();
 				usd = ChatMessage::bits_to_usd(&bits);
 			}
+			else if part.contains("color=") {
+				hex_color = part.split("=").nth(1).unwrap_or("");
+			}
+			else if part.contains("display-name") {
+				display_name = part.split("=").nth(1).unwrap_or("");
+			}
+			else if part.contains("emotes=") {
+				// TODO: Store emotes?
+			}
+			else if part.contains("subscriber=") {
+				is_subscriber = part.split("=").nth(1).unwrap_or("0") == "1";
+			}
+
 			// TODO: check for color, display-name, emotes, subscriber, turbo, user-id, and mod
 		}
 		// TODO: continue parsing irc message, see TwitchClient.cs:161
+
+		if channel.to_lowercase() == name.to_lowercase() {
+			user_type = UserType::Broadcaster;
+		}
+
 		unimplemented!()
 	}
 
-	pub fn to_bool(data: &String) -> bool {
-		data == &String::from("1")
+	pub fn to_bool(data: &str) -> bool {
+		data == "1"
 	}
 
 	pub fn bits_to_usd(bits: &i32) -> f32 {

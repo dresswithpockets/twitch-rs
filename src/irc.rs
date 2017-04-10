@@ -9,24 +9,27 @@ use channel;
 use regex::Regex;
 
 /// Determines if an irc message is a connected message
-pub fn irc_connected(irc: &String) -> bool {
-
-	match irc.split(":").nth(2) {
+pub fn irc_connected<T>(irc: &str) -> bool {
+	println!("irc_connected");
+	return match irc.split(":").nth(2) {
 		Some("You are in a maze of twisty passages, all alike.") => true,
 		_ => false
-	}
+	};
 }
 
 /// Determines if an irc message is a new subscriber message
-pub fn irc_new_subscriber(
-	irc: &String,
+pub fn irc_new_subscriber<T>(
+	irc: &str,
 	channels: &Vec<channel::Channel>
-) -> Option<String> {
+) -> Option<T>
+where T: Into<String> {
+	println!("irc_new_subscriber");
 
 	for chan in channels {
 		match read_type(irc, chan.name()) {
 			Some(rtype) => {
 
+				println!("privmsg");
 				if rtype == "PRIVMSG" &&
 					irc.split("!").nth(0).unwrap_or("") == ":twitchnotify" &&
 					(
@@ -34,7 +37,7 @@ pub fn irc_new_subscriber(
 						irc.to_lowercase().contains("just subscriber with twitch prime!")
 					)
 				{
-					return Some(chan.name().clone());
+					return Some(chan.name());
 				}
 			}
 			_ => {}
@@ -45,10 +48,12 @@ pub fn irc_new_subscriber(
 }
 
 /// Determines if an irc message is a message received message
-pub fn irc_message_received(
-	irc: &String,
+pub fn irc_message_received<T>(
+	irc: &str,
 	channels: &Vec<channel::Channel>
-) -> Option<String> {
+) -> Option<T>
+where T: Into<String> {
+	println!("irc_message_received");
 
 	for chan in channels {
 		match read_type(irc, chan.name()) {
@@ -57,7 +62,8 @@ pub fn irc_message_received(
 				if rtype == "PRIVMSG" &&
 					irc.split("!").nth(0).unwrap_or("") != ":twitchnotify"
 				{
-					return Some(chan.name().clone());
+					println!("\treturning irc message");
+					return Some(chan.name());
 				}
 			}
 			_ => {}
@@ -67,13 +73,25 @@ pub fn irc_message_received(
 	None
 }
 
-/// Determines of an irc message is a command received message
+/// Determines if an irc message is a chat message that contains a command
 pub fn irc_command_received(
-	bot_username: &String,
-	irc: &String,
-	channels: &Vec<channel::Channel>,
-	cmd_identifiers: &Vec<String>
+	bot_username: &str,
+	irc: &str,
+	channel: &str,
+	cmd_ident: &str
+) -> bool {
+	read_type(irc, channel) == Some("PRIVMSG") && 
+		ChatMessage::from(bot_username, irc).text().starts_with(cmd_ident)
+}
+
+/// Determines if an irc message is a command received message
+pub fn irc_command_received_long(
+	bot_username: &str,
+	irc: &str,
+	channels: &[channel::Channel],
+	cmd_identifiers: &[&str]
 ) -> Option<String> {
+	println!("irc_command_received");
 
 	for chan in channels {
 		match read_type(irc, chan.name()) {
@@ -84,7 +102,7 @@ pub fn irc_command_received(
 						irc.clone()
 					);
 					if cmd_identifiers.iter()
-						.map(|x| chat_msg.text().starts_with(x))
+						.filter(|x| chat_msg.text().starts_with(x))
 						.any(|x| x)
 					{
 						return Some(chan.name().clone());
@@ -99,10 +117,12 @@ pub fn irc_command_received(
 }
 
 /// Determines if an irc message is a user joined message
-pub fn irc_user_joined(
-	irc: &String,
+pub fn irc_user_joined<T>(
+	irc: &str,
 	channels: &Vec<channel::Channel>
-) -> Option<String> {
+) -> Option<T>
+where T: Into<String> {
+	println!("irc_user_joined");
 
 	for chan in channels {
 		match read_type(irc, chan.name()) {
@@ -119,10 +139,12 @@ pub fn irc_user_joined(
 }
 
 /// Determines if an irc message is a user left message
-pub fn irc_user_left(
-	irc: &String,
+pub fn irc_user_left<T>(
+	irc: &str,
 	channels: &Vec<channel::Channel>
-) -> Option<String> {
+) -> Option<T>
+where T: Into<String> {
+	println!("irc_user_left");
 
 	for chan in channels {
 		match read_type(irc, chan.name()) {
@@ -139,10 +161,11 @@ pub fn irc_user_left(
 }
 
 /// Determines if an irc message is a moderator joined message
-pub fn irc_moderator_joined(
-	irc: &String,
+pub fn irc_moderator_joined<T>(
+	irc: &str,
 	channels: &Vec<channel::Channel>
-) -> Option<String> {
+) -> Option<T>
+where T: Into<String> {
 
 	for chan in channels {
 		match read_type(irc, chan.name()) {
@@ -162,10 +185,11 @@ pub fn irc_moderator_joined(
 }
 
 /// Determines if an irc message is a moderator left message
-pub fn irc_moderator_left(
-	irc: &String,
+pub fn irc_moderator_left<T>(
+	irc: &str,
 	channels: &Vec<channel::Channel>
-) -> Option<String> {
+) -> Option<T>
+where T: Into<String> {
 
 	for chan in channels {
 		match read_type(irc, chan.name()) {
@@ -185,16 +209,16 @@ pub fn irc_moderator_left(
 }
 
 /// Determines if an irc message is an incorrect login message
-pub fn irc_incorrect_login(irc: &String) -> bool {
-	irc.contains(":") &&
-		irc.split(":").nth(2).unwrap_or("") == "Login authentication failed"
+pub fn irc_incorrect_login<T>(irc: &str) -> bool {
+	irc.contains("Login authentication failed")
 }
 
 /// Determines if an irc message is a malformed oauth message
-pub fn irc_malformed_oauth(
-	irc: &String,
+pub fn irc_malformed_oauth<T>(
+	irc: &str,
 	channels: &Vec<channel::Channel>
-) -> Option<String> {
+) -> Option<T>
+where T: Into<String> {
 
 	for chan in channels {
 		match read_type(irc, chan.name()) {
@@ -212,10 +236,11 @@ pub fn irc_malformed_oauth(
 }
 
 /// Determines if an irc message is a host left message
-pub fn irc_host_left(
-	irc: &String,
+pub fn irc_host_left<T>(
+	irc: &str,
 	channels: &Vec<channel::Channel>
-) -> Option<String> {
+) -> Option<T>
+where T: Into<String> {
 
 	for chan in channels {
 		match read_type(irc, chan.name()) {
@@ -233,10 +258,11 @@ pub fn irc_host_left(
 }
 
 /// Determines if an irc message is a channel state change message
-pub fn irc_channel_state_changed(
-	irc: &String,
+pub fn irc_channel_state_changed<T>(
+	irc: &str,
 	channels: &Vec<channel::Channel>
-) -> Option<String> {
+) -> Option<T>
+where T: Into<String> {
 	for chan in channels {
 		match read_type(irc, chan.name()) {
 			Some(rtype) => {
@@ -251,10 +277,11 @@ pub fn irc_channel_state_changed(
 }
 
 /// Determines if an irc message is a user state change message
-pub fn irc_user_state_changed(
-	irc: &String,
+pub fn irc_user_state_changed<T>(
+	irc: &str,
 	channels: &Vec<channel::Channel>
-) -> Option<String> {
+) -> Option<T>
+where T: Into<String> {
 	for chan in channels {
 		match read_type(irc, chan.name()) {
 			Some(rtype) => {
@@ -269,10 +296,11 @@ pub fn irc_user_state_changed(
 }
 
 /// Determines if an irc message is a re subscriber message
-pub fn irc_re_subscriber(
-	irc: &String,
+pub fn irc_re_subscriber<T>(
+	irc: &str,
 	channels: &Vec<channel::Channel>
-) -> Option<String> {
+) -> Option<T>
+where T: Into<String> {
 
 	for chan in channels {
 		match read_type(irc, chan.name()) {
@@ -294,24 +322,24 @@ pub fn irc_re_subscriber(
 }
 
 /// Determines if an irc message is a ping message
-pub fn irc_ping(
-	irc: &String
+pub fn irc_ping<T>(
+	irc: &str
 ) -> bool {
 
 	irc == "PING :tmi.twitch.tv"
 }
 
 /// Determines if an irc message is a pong message
-pub fn irc_pong(
-	irc: &String
+pub fn irc_pong<T>(
+	irc: &str
 ) -> bool {
 
 	irc == ":tmi.twitch.tv PONG tmi.twitch.tv :irc.chat.twitch.tv"
 }
 
 /// Determines if an irc message is a hosting stopped message
-pub fn irc_hosting_stopped(
-	irc: &String
+pub fn irc_hosting_stopped<T>(
+	irc: &str
 ) -> bool {
 
 	irc.split(" ").nth(1).unwrap_or("") == "HOSTTARGET" &&
@@ -319,8 +347,8 @@ pub fn irc_hosting_stopped(
 }
 
 /// Determines if an irc message is a hosting started message
-pub fn irc_hosting_started(
-	irc: &String
+pub fn irc_hosting_started<T>(
+	irc: &str
 ) -> bool {
 
 	irc.split(" ").nth(1).unwrap_or("") == "HOSTTARGET" &&
@@ -328,11 +356,12 @@ pub fn irc_hosting_started(
 }
 
 /// Determines if an irc message is an existing users message
-pub fn irc_exiting_users(
-	irc: &String,
-	username: &String,
+pub fn irc_existing_users<T>(
+	irc: &str,
+	username: &str,
 	channels: &Vec<channel::Channel>
-) -> Option<String> {
+) -> Option<T>
+where T: Into<String> {
 
 	if channels.len() > 0 &&
 		irc.split(" ").count() > 5 &&
@@ -347,13 +376,14 @@ pub fn irc_exiting_users(
 }
 
 /// Determines if an irc message is a cleared chat message
-pub fn irc_cleared_chat(
-	irc: &String,
+pub fn irc_cleared_chat<T>(
+	irc: &str,
 	channels: &Vec<channel::Channel>
-) -> Option<String> {
+) -> Option<T>
+where T: Into<String> {
 	for chan in channels {
 		if irc == &format!(":tmi.twitch.tv CLEARCHAT #{}", chan.name()) {
-			return Some(chan.name().clone());
+			return Some(chan.name());
 		}
 	}
 
@@ -361,10 +391,11 @@ pub fn irc_cleared_chat(
 }
 
 /// Determines if an irc message is a user timedout message
-pub fn irc_user_timedout(
-	irc: &String,
+pub fn irc_user_timedout<T>(
+	irc: &str,
 	channels: &Vec<channel::Channel>
-) -> Option<String> {
+) -> Option<T>
+where T: Into<String> {
 
 	for chan in channels {
 		match read_type(irc, chan.name()) {
@@ -373,7 +404,7 @@ pub fn irc_user_timedout(
 				if rtype == "CLEARCHAT" &&
 					irc.starts_with("@ban-duration")
 				{
-					return Some(chan.name().clone());
+					return Some(chan.name());
 				}
 			}
 			_ => {}
@@ -384,10 +415,11 @@ pub fn irc_user_timedout(
 }
 
 /// Determines if an irc message is a user banned message
-pub fn irc_user_banned(
-	irc: &String,
+pub fn irc_user_banned<T>(
+	irc: &str,
 	channels: &Vec<channel::Channel>
-) -> Option<String> {
+) -> Option<T>
+where T: Into<String> {
 
 	for chan in channels {
 		match read_type(irc, chan.name()) {
@@ -396,7 +428,7 @@ pub fn irc_user_banned(
 				if rtype == "CLEARCHAT" &&
 					irc.starts_with("@ban-reason")
 				{
-					return Some(chan.name().clone());
+					return Some(chan.name());
 				}
 			}
 			_ => {}
@@ -407,10 +439,11 @@ pub fn irc_user_banned(
 }
 
 /// Determines if an irc message is a moderators received message
-pub fn irc_moderators_received(
-	irc: &String,
+pub fn irc_moderators_received<T>(
+	irc: &str,
 	channels: &Vec<channel::Channel>
-) -> Option<String> {
+) -> Option<T>
+where T: Into<String> {
 
 	for chan in channels {
 		match read_type(irc, chan.name()) {
@@ -419,7 +452,7 @@ pub fn irc_moderators_received(
 				if rtype == "NOTICE" &&
 					irc.contains("The moderators of this room are:")
 				{
-					return Some(chan.name().clone());
+					return Some(chan.name());
 				}
 			}
 			_ => {}
@@ -430,10 +463,11 @@ pub fn irc_moderators_received(
 }
 
 /// Determines if an irc message is a chat color changed message
-pub fn irc_chat_color_changed(
-	irc: &String,
+pub fn irc_chat_color_changed<T>(
+	irc: &str,
 	channels: &Vec<channel::Channel>
-) -> Option<String> {
+) -> Option<T>
+where T: Into<String> {
 
 	for chan in channels {
 		match read_type(irc, chan.name()) {
@@ -442,7 +476,7 @@ pub fn irc_chat_color_changed(
 				if rtype == "NOTICE" &&
 					irc.contains("Your color has been changed.")
 				{
-					return Some(chan.name().clone());
+					return Some(chan.name());
 				}
 			}
 			_ => {}
@@ -453,10 +487,11 @@ pub fn irc_chat_color_changed(
 }
 
 /// Determines if an irc message is a now hosting message
-pub fn irc_now_hosting(
-	irc: &String,
+pub fn irc_now_hosting<T>(
+	irc: &str,
 	channels: &Vec<channel::Channel>
-) -> Option<String> {
+) -> Option<T>
+where T: Into<String> {
 
 	match msg_id(irc) {
 		Some(id) => {
@@ -468,7 +503,7 @@ pub fn irc_now_hosting(
 					irc.split(" ").nth(3).unwrap_or("").to_lowercase().replace("#", "")
 					)
 				{
-					return Some(chan.name().clone());
+					return Some(chan.name());
 				}
 			}
 		}
@@ -479,43 +514,67 @@ pub fn irc_now_hosting(
 }
 
 /// Determines if an irc message is a join channel completed message
-pub fn irc_join_channel_completed(irc: &String) -> Option<String> {
+pub fn irc_join_channel_completed<T>(irc: &str) -> Option<T>
+where T: Into<String> {
 
 	if irc.contains(" ") && irc.split(" ").nth(1).unwrap_or("") != "366" {
-		return Some(irc.split(" ").nth(3).unwrap_or("").replace("#", ""));
+		return Some(irc.split(" ").nth(3).unwrap_or("").replace("#", "").as_ref());
 	}
 
 	None
 }
 
 /// Determines if an irc message is a being hosted message
-pub fn irc_being_hosted(
-	irc: &String,
+pub fn irc_being_hosted<T>(
+	irc: &str,
 	channels: &Vec<channel::Channel>
-) -> Option<String> {
+) -> Option<T>
+where T: Into<String> {
 
 	if irc.contains(" ") &&
 		irc.split(" ").nth(1).unwrap_or("") == "PRIVMSG" &&
 		irc.contains("jtv!jtv@jtv") &&
 		irc.contains("is now hosting you")
 	{
-		return Some(irc.split(" ").nth(2).unwrap_or("").to_owned());
+		return Some(irc.split(" ").nth(2).unwrap_or(""));
 	}
 
 	None
 }
 
 /// Determines the read type of an irc message
-pub fn read_type(irc: &String, channel: &String) -> Option<String> {
+pub fn read_type(irc: &str, channel: &str) -> Option<String> {
 
-	if irc.contains(" ") {
+	return if irc.contains(" ") {
+		match irc.split(" ").filter(|word| word == format!("#{}", channel.trim())).next() {
+			Some(word) => {
+				let reg = Regex::new(format!(" #{}", channel).as_ref()).unwrap();
+				let mut reg_split = reg.split(irc).nth(0).unwrap()
+										.split(" ");
+				let mut reg_copy = reg_split.clone();
+
+				reg_copy.nth(reg_split.count() - 1)
+			}
+			None => {
+				if irc.split(" ").nth(1) == Some("NOTICE") {
+
+					Some("NOTICE")
+				}
+			}
+		}
+	}
+	else {
+		None
+	};
+
+	/*if irc.contains(" ") {
 
 		let mut found = false;
 		for word in irc.split(" ") {
-			if word.chars().nth(0).unwrap() == '#' {
-				if word == format!("#{}", channel) {
-					found = true;
-				}
+			if word == format!("#{}", channel.trim()) {
+
+				found = true;
+				break;
 			}
 		}
 		if found {
@@ -523,25 +582,27 @@ pub fn read_type(irc: &String, channel: &String) -> Option<String> {
 			let mut reg_split = reg.split(irc).nth(0).unwrap()
 									.split(" ");
 			let mut reg_copy = reg_split.clone();
-			return Some(reg_copy.nth(reg_split.count() - 1).unwrap().to_owned());
+
+			return Some(reg_copy.nth(reg_split.count() - 1).unwrap());
 		}
 		else {
 			if irc.split(" ").count() > 1 && irc.split(" ").nth(1).unwrap() == "NOTICE" {
-				return Some(String::from("NOTICE"));
+
+				return Some("NOTICE");
 			}
 		}
 	}
 
-	None
+	None*/
 }
 
 /// Extracts the message id from an irc message
-pub fn msg_id(irc: &String) -> Option<String> {
+pub fn msg_id(irc: &str) -> Option<&str> {
 	for part in irc.split(" ") {
 		if part.contains("@msg-id") &&
 			part.split("=").nth(1).unwrap_or("") != ""
 		{
-			return Some(part.split("=").nth(1).unwrap_or("").to_owned());
+			return Some(part.split("=").nth(1).unwrap_or(""));
 		}
 	}
 	None

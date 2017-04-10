@@ -1,428 +1,429 @@
-pub fn valid_nick(nick: &String) -> bool {
+pub fn valid_nick(nick: &str) -> bool {
 
 	// TODO: Validate nick name
 
 	false
 }
 
-pub fn pass(pass: &String) -> String {
-	format!("PASS {}", pass)
+pub fn pass<'a>(pass: &str) -> &'a str {
+	format!("PASS {}", pass).as_ref()
 }
 
-pub fn nick(nick: &String) -> String {
-	format!("NICK {}", nick)
+pub fn nick<'a>(nick: &str) -> &'a str {
+	format!("NICK {}", nick).as_ref()
 }
 
-pub fn user(user: &String, mode: &i32, realname: &String) -> String {
-	format!("USER {} {} * :{}", user, mode.to_string(), realname)
+pub fn user<'a>(user: &str, mode: &i32, realname: &str) -> &'a str {
+	format!("USER {} {} * :{}", user, mode.to_string(), realname).as_ref()
 }
 
-pub fn oper(name: &String, pass: &String) -> String {
-	format!("OPER {} {}", name, pass)
+pub fn oper<'a>(name: &str, pass: &str) -> &'a str {
+	format!("OPER {} {}", name, pass).as_ref()
 }
 
-pub fn privmsg(dest: &String, message: &String) -> String {
-	format!("PRIVMSG {} :{}", dest, message)
+pub fn privmsg<'a>(dest: &str, message: &str) -> &'a str {
+	format!("PRIVMSG {} :{}", dest, message).as_ref()
 }
 
-pub fn notice(dest: &String, message: &String) -> String {
-	format!("NOTICE {} :{}", dest, message)
+pub fn notice<'a>(dest: &str, message: &str) -> &'a str {
+	format!("NOTICE {} :{}", dest, message).as_ref()
 }
 
-pub fn join_channel(channel: &String) -> String {
-	format!("JOIN {}", channel)
+pub fn join_channel<'a>(channel: &str) -> &'a str {
+	format!("JOIN {}", channel).as_ref()
 }
 
-pub fn join_channels(channels: &[String]) -> String {
-	format!("JOIN {}", channels.to_vec().join(","))
+pub fn join_channels<'a>(channels: &[String]) -> &'a str {
+	format!("JOIN {}", channels.to_vec().join(",")).as_ref()
 }
 
-pub fn join_channel_key(channel: &String, key: &String) -> String {
-	format!("JOIN {} {}", channel, key)
+pub fn join_channel_key<'a>(channel: &str, key: &str) -> &'a str {
+	format!("JOIN {} {}", channel, key).as_ref()
 }
 
-pub fn join_channels_keys(channels: &[String], keys: &[String]) -> String {
-	format!("JOIN {} {}", channels.to_vec().join(","), keys.to_vec().join(","))
+pub fn join_channels_keys<'a>(channels: &[String], keys: &[String]) -> &'a str {
+	format!("JOIN {} {}", channels.to_vec().join(","), keys.to_vec().join(",")).as_ref()
 }
 
-pub fn part_channel(channel: &String) -> String {
-	format!("PART {}", channel)
+pub fn part_channel<'a>(channel: &str) -> &'a str {
+	format!("PART {}", channel).as_ref()
 }
 
-pub fn part_channels(channels: &[String]) -> String {
-	format!("PART {}", channels.to_vec().join(","))
+pub fn part_channels<'a>(channels: &[String]) -> &'a str {
+	format!("PART {}", channels.to_vec().join(",")).as_ref()
 }
 
-pub fn part_channel_message(channel: &String, message: &String) -> String {
-	format!("PART {} :{}", channel, message)
+pub fn part_channel_message<'a>(channel: &str, message: &str) -> &'a str {
+	format!("PART {} :{}", channel, message).as_ref()
 }
 
-pub fn part_channels_message(channels: &[String], message: &String) -> String {
-	format!("PART {} :{}", channels.to_vec().join(","), message)
+pub fn part_channels_message<'a>(channels: &[String], message: &str) -> &'a str {
+	format!("PART {} :{}", channels.to_vec().join(","), message).as_ref()
 }
 
-pub fn kick_channel(channel: &String, nick: &String) -> String {
-	format!("KICK {} {}", channel, nick)
+pub fn kick_channel<'a>(channel: &str, nick: &str) -> &'a str {
+	format!("KICK {} {}", channel, nick).as_ref()
 }
 
-pub fn kick_channel_comment(channel: &String, nick: &String, comment: &String) -> String {
-	format!("KICK {} {} :{}", channel, nick, comment)
+pub fn kick_channel_comment<'a>(channel: &str, nick: &str, comment: &str) -> &'a str {
+	format!("KICK {} {} :{}", channel, nick, comment).as_ref()
 }
 
-pub fn kick_channels(channels: &[String], nick: &String) -> String {
-	format!("KICK {} {}", channels.to_vec().join(","), nick)
+pub fn kick_channels<'a>(channels: &[String], nick: &str) -> &'a str {
+	format!("KICK {} {}", channels.to_vec().join(","), nick).as_ref()
 }
 
-pub fn kick_channels_nick_comment(channels: &[String], nick: &String, comment: &String) -> String {
-	format!("KICK {} {} :{}", channels.to_vec().join(","), nick, comment)
+pub fn kick_channels_nick_comment<'a>(channels: &[String], nick: &str, comment: &str) -> &'a str {
+	format!("KICK {} {} :{}", channels.to_vec().join(","), nick, comment).as_ref()
 }
 
-pub fn kick_channel_nicks(channel: &String, nicks: &[String]) -> String {
-	format!("KICK {} {}", channel, nicks.to_vec().join(","))
+pub fn kick_channel_nicks<'a>(channel: &str, nicks: &[String]) -> &'a str {
+	format!("KICK {} {}", channel, nicks.to_vec().join(",")).as_ref()
 }
 
-pub fn kick_channel_nicks_comment(channel: &String, nicks: &[String], comment: &String) -> String {
-	format!("KICK {} {} :{}", channel, nicks.to_vec().join(","), comment)
+pub fn kick_channel_nicks_comment<'a>(channel: &str, nicks: &[String], comment: &str) -> &'a str {
+	format!("KICK {} {} :{}", channel, nicks.to_vec().join(","), comment).as_ref()
 }
 
-pub fn kick_channels_nicks(channels: &[String], nicks: &[String]) -> String {
-	format!("KICK {} {}", channels.to_vec().join(","), nicks.to_vec().join(","))
+pub fn kick_channels_nicks<'a>(channels: &[String], nicks: &[String]) -> &'a str {
+	format!("KICK {} {}", channels.to_vec().join(","), nicks.to_vec().join(",")).as_ref()
 }
 
-pub fn kick_channels_nicks_comment(
-	channels: &[String],
-	nicks: &[String],
-	comment: &String
-) -> String {
+pub fn kick_channels_nicks_comment<'a>(
+	channels: &[&'a str],
+	nicks: &[&'a str],
+	comment: &str
+) -> &'a str {
 
 	format!("KICK {} {} :{}", channels.to_vec().join(","), nicks.to_vec().join(","), comment)
+	.as_ref()
 }
 
-pub fn motd() -> String {
-	String::from("MOTD")
+pub fn motd<'a>() -> &'a str {
+	"MOTD"
 }
 
-pub fn motd_target(target: &String) -> String {
-	format!("MOTD {}", target)
+pub fn motd_target<'a>(target: &str) -> &'a str {
+	format!("MOTD {}", target).as_ref()
 }
 
-pub fn lusers() -> String {
-	String::from("LUSERS")
+pub fn lusers<'a>() -> &'a str {
+	"LUSERS"
 }
 
-pub fn lusers_mask(mask: &String) -> String {
-	format!("LUSER {}", mask)
+pub fn lusers_mask<'a>(mask: &str) -> &'a str {
+	format!("LUSER {}", mask).as_ref()
 }
 
-pub fn lusers_target(mask: &String, target: &String) -> String {
-	format!("LUSER {} {}", mask, target)
+pub fn lusers_target<'a>(mask: &str, target: &str) -> &'a str {
+	format!("LUSER {} {}", mask, target).as_ref()
 }
 
-pub fn version() -> String {
-	String::from("VERSION")
+pub fn version<'a>() -> &'a str {
+	"VERSION"
 }
 
-pub fn version_target(target: &String) -> String {
-	format!("VERSION {}", target)
+pub fn version_target<'a>(target: &str) -> &'a str {
+	format!("VERSION {}", target).as_ref()
 }
 
-pub fn stats() -> String {
-	String::from("STATS")
+pub fn stats<'a>() -> &'a str {
+	"STATS"
 }
 
-pub fn stats_query(query: &String) -> String {
-	format!("STATS {}", query)
+pub fn stats_query<'a>(query: &str) -> &'a str {
+	format!("STATS {}", query).as_ref()
 }
 
-pub fn stats_target(query: &String, target: &String) -> String {
-	format!("STATS {} {}", query, target)
+pub fn stats_target<'a>(query: &str, target: &str) -> &'a str {
+	format!("STATS {} {}", query, target).as_ref()
 }
 
-pub fn links() -> String {
-	String::from("LINKS")
+pub fn links<'a>() -> &'a str {
+	"LINKS"
 }
 
-pub fn links_mask(mask: &String) -> String {
-	format!("LINKS {}", mask)
+pub fn links_mask<'a>(mask: &str) -> &'a str {
+	format!("LINKS {}", mask).as_ref()
 }
 
-pub fn links_remote(remote: &String, mask: &String) -> String {
-	format!("LINKS {} {}", remote, mask)
+pub fn links_remote<'a>(remote: &str, mask: &str) -> &'a str {
+	format!("LINKS {} {}", remote, mask).as_ref()
 }
 
-pub fn time() -> String {
-	String::from("TIME")
+pub fn time<'a>() -> &'a str {
+	"TIME"
 }
 
-pub fn time_target(target: &String) -> String {
-	format!("TIME {}", target)
+pub fn time_target<'a>(target: &str) -> &'a str {
+	format!("TIME {}", target).as_ref()
 }
 
-pub fn connect(server: &String, port: &String) -> String {
-	format!("CONNECT {} {}", server, port)
+pub fn connect<'a>(server: &str, port: &str) -> &'a str {
+	format!("CONNECT {} {}", server, port).as_ref()
 }
 
-pub fn connect_remote(server: &String, port: &String, remote: &String) -> String {
-	format!("CONNECT {} {} {}", server, port, remote)
+pub fn connect_remote<'a>(server: &str, port: &str, remote: &str) -> &'a str {
+	format!("CONNECT {} {} {}", server, port, remote).as_ref()
 }
 
-pub fn trace() -> String {
-	String::from("TRACE")
+pub fn trace<'a>() -> &'a str {
+	"TRACE"
 }
 
-pub fn trace_target(target: &String) -> String {
-	format!("TRACE {}", target)
+pub fn trace_target<'a>(target: &str) -> &'a str {
+	format!("TRACE {}", target).as_ref()
 }
 
-pub fn admin() -> String {
-	String::from("ADMIN")
+pub fn admin<'a>() -> &'a str {
+	"ADMIN"
 }
 
-pub fn admin_target(target: &String) -> String {
-	format!("ADMIN {}", target)
+pub fn admin_target<'a>(target: &str) -> &'a str {
+	format!("ADMIN {}", target).as_ref()
 }
 
-pub fn info() -> String {
-	String::from("INFO")
+pub fn info<'a>() -> &'a str {
+	"INFO"
 }
 
-pub fn info_target(target: &String) -> String {
-	format!("INFO {}", target)
+pub fn info_target<'a>(target: &str) -> &'a str {
+	format!("INFO {}", target).as_ref()
 }
 
-pub fn serv_list() -> String {
-	String::from("SERVLIST")
+pub fn serv_list<'a>() -> &'a str {
+	"SERVLIST"
 }
 
-pub fn serv_list_mask(mask: &String) -> String {
-	format!("SERVLIST {}", mask)
+pub fn serv_list_mask<'a>(mask: &str) -> &'a str {
+	format!("SERVLIST {}", mask).as_ref()
 }
 
-pub fn serv_list_mask_type(mask: &String, masktype: &String) -> String {
-	format!("SERVLIST {} {}", mask, masktype)
+pub fn serv_list_mask_type<'a>(mask: &str, masktype: &str) -> &'a str {
+	format!("SERVLIST {} {}", mask, masktype).as_ref()
 }
 
-pub fn squery(name: &String, text: &String) -> String {
-	format!("SQUERY {} :{}", name, text)
+pub fn squery<'a>(name: &str, text: &str) -> &'a str {
+	format!("SQUERY {} :{}", name, text).as_ref()
 }
 
-pub fn list() -> String {
-	String::from("LIST")
+pub fn list<'a>() -> &'a str {
+	"LIST"
 }
 
-pub fn list_channel(channel: &String) -> String {
-	format!("LIST {}", channel)
+pub fn list_channel<'a>(channel: &str) -> &'a str {
+	format!("LIST {}", channel).as_ref()
 }
 
-pub fn list_channels(channels: &[String]) -> String {
-	format!("LIST {}", channels.to_vec().join(","))
+pub fn list_channels<'a>(channels: &[String]) -> &'a str {
+	format!("LIST {}", channels.to_vec().join(",")).as_ref()
 }
 
-pub fn list_channel_target(channel: &String, target: &String) -> String {
-	format!("LIST {} {}", channel, target)
+pub fn list_channel_target<'a>(channel: &str, target: &str) -> &'a str {
+	format!("LIST {} {}", channel, target).as_ref()
 }
 
-pub fn list_channels_target(channels: &[String], target: &String) -> String {
-	format!("LIST {} {}", channels.to_vec().join(","), target)
+pub fn list_channels_target<'a>(channels: &[String], target: &str) -> &'a str {
+	format!("LIST {} {}", channels.to_vec().join(","), target).as_ref()
 }
 
-pub fn names() -> String {
-	String::from("NAMES")
+pub fn names<'a>() -> &'a str {
+	"NAMES"
 }
 
-pub fn names_channel(channel: &String) -> String {
-	format!("NAMES {}", channel)
+pub fn names_channel<'a>(channel: &str) -> &'a str {
+	format!("NAMES {}", channel).as_ref()
 }
 
-pub fn names_channels(channels: &[String]) -> String {
-	format!("NAMES {}", channels.to_vec().join(","))
+pub fn names_channels<'a>(channels: &[String]) -> &'a str {
+	format!("NAMES {}", channels.to_vec().join(",")).as_ref()
 }
 
-pub fn names_channel_target(channel: &String, target: &String) -> String {
-	format!("NAMES {} {}", channel, target)
+pub fn names_channel_target<'a>(channel: &str, target: &str) -> &'a str {
+	format!("NAMES {} {}", channel, target).as_ref()
 }
 
-pub fn names_channels_target(channels: &[String], target: &String) -> String {
-	format!("NAMES {} {}", channels.to_vec().join(","), target)
+pub fn names_channels_target<'a>(channels: &[String], target: &str) -> &'a str {
+	format!("NAMES {} {}", channels.to_vec().join(","), target).as_ref()
 }
 
-pub fn topic(channel: &String) -> String {
-	format!("TOPIC {}", channel)
+pub fn topic<'a>(channel: &str) -> &'a str {
+	format!("TOPIC {}", channel).as_ref()
 }
 
-pub fn topic_new(channel: &String, newtopic: &String) -> String {
-	format!("TOPIC {} :{}", channel, newtopic)
+pub fn topic_new<'a>(channel: &str, newtopic: &str) -> &'a str {
+	format!("TOPIC {} :{}", channel, newtopic).as_ref()
 }
 
-pub fn mode(target: &String) -> String {
-	format!("MODE {}", target)
+pub fn mode<'a>(target: &str) -> &'a str {
+	format!("MODE {}", target).as_ref()
 }
 
-pub fn mode_new(target: &String, newmode: &String) -> String {
-	format!("MODE {} {}", target, newmode)
+pub fn mode_new<'a>(target: &str, newmode: &str) -> &'a str {
+	format!("MODE {} {}", target, newmode).as_ref()
 }
 
-pub fn mode_new_params(target: &String, modes: &[String], params: &[String]) -> String {
+pub fn mode_new_params<'a>(target: &str, modes: &[String], params: &[String]) -> &'a str {
 	// TODO: Parse params and modes
 
 	unimplemented!();
 }
 
-pub fn service(nick: &String, distro: &String, info: &String) -> String {
-	format!("SERVICE {} * {} * * :{}", nick, distro, info)
+pub fn service<'a>(nick: &str, distro: &str, info: &str) -> &'a str {
+	format!("SERVICE {} * {} * * :{}", nick, distro, info).as_ref()
 }
 
-pub fn invite(nick: &String, channel: &String) -> String {
-	format!("INVITE {} {}", nick, channel)
+pub fn invite<'a>(nick: &str, channel: &str) -> &'a str {
+	format!("INVITE {} {}", nick, channel).as_ref()
 }
 
-pub fn who() -> String {
-	String::from("WHO")
+pub fn who<'a>() -> &'a str {
+	"WHO"
 }
 
-pub fn who_mask(mask: &String) -> String {
-	format!("WHO {}", mask)
+pub fn who_mask<'a>(mask: &str) -> &'a str {
+	format!("WHO {}", mask).as_ref()
 }
 
-pub fn who_mask_ircop(mask: &String, ircop: &bool) -> String {
+pub fn who_mask_ircop<'a>(mask: &str, ircop: &bool) -> &'a str {
 	if *ircop {
-		return format!("WHO {} o", mask)
+		return format!("WHO {} o", mask).as_ref()
 	}
-	format!("WHO {}", mask)
+	format!("WHO {}", mask).as_ref()
 }
 
-pub fn whois_mask(mask: &String) -> String {
-	format!("WHOIS {}", mask)
+pub fn whois_mask<'a>(mask: &str) -> &'a str {
+	format!("WHOIS {}", mask).as_ref()
 }
 
-pub fn whois_masks(masks: &[String]) -> String {
-	format!("WHOIS {}", masks.to_vec().join(","))
+pub fn whois_masks<'a>(masks: &[String]) -> &'a str {
+	format!("WHOIS {}", masks.to_vec().join(",")).as_ref()
 }
 
-pub fn whois_target_mask(target: &String, mask: &String) -> String {
-	format!("WHOIS {} {}", target, mask)
+pub fn whois_target_mask<'a>(target: &str, mask: &str) -> &'a str {
+	format!("WHOIS {} {}", target, mask).as_ref()
 }
 
-pub fn whois_target_masks(target: &String, masks: &[String]) -> String {
-	format!("WHOIS {} {}", target, masks.to_vec().join(","))
+pub fn whois_target_masks<'a>(target: &str, masks: &[String]) -> &'a str {
+	format!("WHOIS {} {}", target, masks.to_vec().join(",")).as_ref()
 }
 
-pub fn whowas_nick(nick: &String) -> String {
-	format!("WHOWAS {}", nick)
+pub fn whowas_nick<'a>(nick: &str) -> &'a str {
+	format!("WHOWAS {}", nick).as_ref()
 }
 
-pub fn whowas_nicks(nicks: &[String]) -> String {
-	format!("WHOWAS {}", nicks.to_vec().join(","))
+pub fn whowas_nicks<'a>(nicks: &[String]) -> &'a str {
+	format!("WHOWAS {}", nicks.to_vec().join(",")).as_ref()
 }
 
-pub fn whowas_nick_count(nick: &String, count: &String) -> String {
-	format!("WHOWAS {} {}", nick, count)
+pub fn whowas_nick_count<'a>(nick: &str, count: &str) -> &'a str {
+	format!("WHOWAS {} {}", nick, count).as_ref()
 }
 
-pub fn whowas_nicks_count(nicks: &[String], count: &String) -> String {
-	format!("WHOWAS {} {}", nicks.to_vec().join(","), count)
+pub fn whowas_nicks_count<'a>(nicks: &[String], count: &str) -> &'a str {
+	format!("WHOWAS {} {}", nicks.to_vec().join(","), count).as_ref()
 }
 
-pub fn whowas_nick_count_target(nick: &String, count: &String, target: &String) -> String {
-	format!("WHOWAS {} {} {}", nick, count, target)
+pub fn whowas_nick_count_target<'a>(nick: &str, count: &str, target: &str) -> &'a str {
+	format!("WHOWAS {} {} {}", nick, count, target).as_ref()
 }
 
-pub fn whowas_nicks_count_target(nicks: &[String], count: &String, target: &String) -> String {
-	format!("WHOWAS {} {} {}", nicks.to_vec().join(","), count, target)
+pub fn whowas_nicks_count_target<'a>(nicks: &[String], count: &str, target: &str) -> &'a str {
+	format!("WHOWAS {} {} {}", nicks.to_vec().join(","), count, target).as_ref()
 }
 
-pub fn kill(nick: &String, comment: &String) -> String {
-	format!("KILL {} :{}", nick, comment)
+pub fn kill<'a>(nick: &str, comment: &str) -> &'a str {
+	format!("KILL {} :{}", nick, comment).as_ref()
 }
 
-pub fn ping_one(server: &String) -> String {
-	format!("PING {}", server)
+pub fn ping_one<'a>(server: &str) -> &'a str {
+	format!("PING {}", server).as_ref()
 }
 
-pub fn ping_two(server: &String, server2: &String) -> String {
-	format!("PING {} {}", server, server2)
+pub fn ping_two<'a>(server: &str, server2: &str) -> &'a str {
+	format!("PING {} {}", server, server2).as_ref()
 }
 
-pub fn pong_one(server: &String) -> String {
-	format!("PONG {}", server)
+pub fn pong_one<'a>(server: &str) -> &'a str {
+	format!("PONG {}", server).as_ref()
 }
 
-pub fn pong_two(server: &String, server2: &String) -> String {
-	format!("PONG {} {}", server, server2)
+pub fn pong_two<'a>(server: &str, server2: &str) -> &'a str {
+	format!("PONG {} {}", server, server2).as_ref()
 }
 
-pub fn error(message: &String) -> String {
-	format!("ERROR :{}", message)
+pub fn error<'a>(message: &str) -> &'a str {
+	format!("ERROR :{}", message).as_ref()
 }
 
-pub fn away() -> String {
-	String::from("AWAY")
+pub fn away<'a>() -> &'a str {
+	"AWAY"
 }
 
-pub fn away_text(text: &String) -> String {
-	format!("AWAY :{}", text)
+pub fn away_text<'a>(text: &str) -> &'a str {
+	format!("AWAY :{}", text).as_ref()
 }
 
-pub fn rehash() -> String {
-	String::from("REHASH")
+pub fn rehash<'a>() -> &'a str {
+	"REHASH"
 }
 
-pub fn die() -> String {
-	String::from("DIE")
+pub fn die<'a>() -> &'a str {
+	"DIE"
 }
 
-pub fn restart() -> String {
-	String::from("RESTART")
+pub fn restart<'a>() -> &'a str {
+	"RESTART"
 }
 
-pub fn summon_user(user: &String) -> String {
-	format!("SUMMON {}", user)
+pub fn summon_user<'a>(user: &str) -> &'a str {
+	format!("SUMMON {}", user).as_ref()
 }
 
-pub fn summon_user_target(user: &String, target: &String) -> String {
-	format!("SUMMON {} {}", user, target)
+pub fn summon_user_target<'a>(user: &str, target: &str) -> &'a str {
+	format!("SUMMON {} {}", user, target).as_ref()
 }
 
-pub fn summon_user_target_channel(user: &String, target: &String, channel: &String) -> String {
-	format!("SUMMON {} {} {}", user, target, channel)
+pub fn summon_user_target_channel<'a>(user: &str, target: &str, channel: &str) -> &'a str {
+	format!("SUMMON {} {} {}", user, target, channel).as_ref()
 }
 
-pub fn users() -> String {
-	String::from("USERS")
+pub fn users<'a>() -> &'a str {
+	"USERS"
 }
 
-pub fn users_target(target: &String) -> String {
-	format!("USERS {}", target)
+pub fn users_target<'a>(target: &str) -> &'a str {
+	format!("USERS {}", target).as_ref()
 }
 
-pub fn wallops(text: &String) -> String {
-	format!("WALLOPS :{}", text)
+pub fn wallops<'a>(text: &str) -> &'a str {
+	format!("WALLOPS :{}", text).as_ref()
 }
 
-pub fn userhost_nick(nick: &String) -> String {
-	format!("USERHOST {}", nick)
+pub fn userhost_nick<'a>(nick: &str) -> &'a str {
+	format!("USERHOST {}", nick).as_ref()
 }
 
-pub fn userhost_nicks(nicks: &[String]) -> String {
-	format!("USERHOST {}", nicks.to_vec().join(","))
+pub fn userhost_nicks<'a>(nicks: &[String]) -> &'a str {
+	format!("USERHOST {}", nicks.to_vec().join(",")).as_ref()
 }
 
-pub fn ison_nick(nick: &String) -> String {
-	format!("ISON {}", nick)
+pub fn ison_nick<'a>(nick: &str) -> &'a str {
+	format!("ISON {}", nick).as_ref()
 }
 
-pub fn ison_nicks(nicks: &[String]) -> String {
-	format!("ISON {}", nicks.to_vec().join(","))
+pub fn ison_nicks<'a>(nicks: &[String]) -> &'a str {
+	format!("ISON {}", nicks.to_vec().join(",")).as_ref()
 }
 
-pub fn quit() -> String {
-	String::from("QUIT")
+pub fn quit<'a>() -> &'a str {
+	"QUIT"
 }
 
-pub fn quit_message(message: &String) -> String {
-	format!("QUIT {}", message)
+pub fn quit_message<'a>(message: &str) -> &'a str {
+	format!("QUIT {}", message).as_ref()
 }
 
-pub fn squit(server: &String, comment: &String) -> String {
-	format!("SQUIT {} :{}", server, comment)
+pub fn squit<'a>(server: &str, comment: &str) -> &'a str {
+	format!("SQUIT {} :{}", server, comment).as_ref()
 }
