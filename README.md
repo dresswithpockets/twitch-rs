@@ -1,3 +1,6 @@
+# Archived
+Use a more mature wrapper like https://github.com/age-rs/libtwitch-rs
+
 # twitch-rs
 Rust wrapper for Twitch API
 
